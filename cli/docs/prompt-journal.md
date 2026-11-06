@@ -165,3 +165,46 @@ Using the 6-Box Prompting Technique helped me structure prompts by specifying th
 - The ticket ID format is a practice choice and must be confirmed against the project requirements before being treated as final.
 - The CSV parser currently handles basic comma-separated data but does not support commas inside quoted fields.
 - The reported Jest result is 8 passing tests across 2 suites. Other checks should be described as completed only when their actual results have been verified.
+
+
+
+## Manual vs AI Code Review Comparison
+
+### 1. Both Found – Similar Findings
+
+| Manual Finding | AI Finding | Comparison |
+|---|---|---|
+| Mixed Responsibilities | Poor Separation of Responsibilities | Both identified the need to separate responsibilities properly. |
+| Duplicate Code | Duplicate Close/Reopen Flows | Both identified duplicated logic in the ticket operations. |
+| Repeated Error Handling | No Centralized Error Path | Both identified the need to improve error handling. |
+| Magic Number | Hard-coded API Configuration | Both identified the hard-coded port number (3000). |
+| Global Mutable State | Repository Exposes Mutable Internal State | Both identified issues related to shared mutable data. |
+| Incomplete Input Validation | Validation Gaps | Both identified incomplete input validation. |
+| Missing Priority Validation | Priority Validation | Both identified the need for priority validation. |
+
+### 2. AI Only – Findings Identified by AI
+
+| No. | AI Finding | Explanation |
+|---|---|---|
+| 1 | Synchronous Filtering in Service | Filtering large amounts of data in the service layer may become inefficient. |
+| 2 | Invalid ID Validation | The application does not verify whether the ID is a positive integer. |
+| 3 | Inconsistent Service Result Shapes | The success and error results have different response structures. |
+
+### 3. Manual Only – Findings Identified Manually
+
+| No. | Manual Finding | Explanation |
+|---|---|---|
+| 1 | Poor Variable Naming | The variable name `t` is not descriptive and could be replaced with a meaningful name. |
+| 2 | Hard-coded Initial Data | Initial ticket records are directly defined in the source code. |
+
+### 4. Final Comparison Summary
+
+| Category | Count |
+|---|---:|
+| Manual Code Smells | 9 |
+| AI Review Findings | 8 |
+| Similar / Overlapping Findings | 7 |
+| AI-only Findings | 3 |
+| Manual-only Findings | 2 |
+
+**Note:** Similar findings are related or overlapping issues, but they are not necessarily identical. Therefore, the counts should not be interpreted as 7 + 3 = 10 unique AI findings. The manual and AI reviews identified some of the same issues from different perspectives.
