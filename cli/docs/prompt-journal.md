@@ -208,3 +208,60 @@ Using the 6-Box Prompting Technique helped me structure prompts by specifying th
 | Manual-only Findings | 2 |
 
 **Note:** Similar findings are related or overlapping issues, but they are not necessarily identical. Therefore, the counts should not be interpreted as 7 + 3 = 10 unique AI findings. The manual and AI reviews identified some of the same issues from different perspectives.
+---
+
+## Entry 4: AI-Assisted Database Design, Migration and Seeding
+
+**Date:** 9 November 2026
+
+**Task/Context:**
+Implement and document the proposed SupportDesk database design using Prisma and PostgreSQL. Prepare 50 fictional sample tickets using the Day 5 CSV-to-JSON CLI.
+
+**Prompt Summary:**
+Used AI assistance to review database entities, relationships, enum values, Prisma schema, migration workflow, and seed-script requirements.
+
+Constraints included:
+- Follow the available Day 8 task instructions and existing project configuration.
+- Do not invent unconfirmed business rules.
+- Validate sample JSON before database insertion.
+- Make seed execution safe to rerun.
+- Verify inserted records independently using SQL.
+- Document the implemented schema using Mermaid ERD.
+
+**AI-Assisted Implementation:**
+The Prisma schema contains User, Ticket, Comment, Tag, Attachment, and AuditLog models. It defines user roles, ticket statuses, priorities, and comment visibility values.
+
+A TypeScript seed script reads cli/sample-tickets.json, validates records and references, creates demo users, and inserts sample tickets.
+
+**Changes/Corrections Made:**
+- Created and applied the initial Prisma migration.
+- Generated Prisma Client.
+- Created a seed script using the Day 5 CSV-to-JSON output.
+- Used integer auto-incrementing database IDs for Ticket records.
+- Created database design notes and a Mermaid ERD based on the implemented schema.
+
+**Verification:**
+- Prisma migration completed successfully.
+- Prisma Client generation completed successfully.
+- Seed script TypeScript compiler check returned without errors.
+- Seed command completed successfully.
+- Independent PostgreSQL queries verified inserted records.
+
+**Verified Results:**
+- Seed tickets: 50
+- Demo users: 8
+- CUSTOMER users: 5
+- AGENT users: 3
+- Migration status: Database schema up to date.
+
+**Important Limitations:**
+- The schema is not confirmed as the final lead-approved design.
+- bcryptjs with cost factor 12 was an implementation choice for demo password hashes, not a password-hashing algorithm specified in the task brief.
+- Category is currently a String.
+- Authentication and authorization workflows are not established by these database models alone.
+- Final schema decisions and business rules require project-lead confirmation.
+
+**What I Learned:**
+I learned how Prisma models represent database tables, how primary and foreign keys establish relationships, how enums restrict values, and how migrations synchronize a schema with PostgreSQL.
+
+I also learned how to prepare sample data using a CLI, validate references, use transactions, and independently verify database records using SQL.
