@@ -1,0 +1,452 @@
+[
+  {
+    "title": "[SEED] Login page not loading",
+    "description": "Customer cannot open the login page",
+    "status": "OPEN",
+    "priority": "P1",
+    "category": "Technical",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Password reset email missing",
+    "description": "Password reset email was not received",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Dashboard loading slowly",
+    "description": "Dashboard takes too long to load",
+    "status": "IN_PROGRESS",
+    "priority": "P2",
+    "category": "Technical",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Profile update issue",
+    "description": "Customer cannot update profile details",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Account",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Payment page error",
+    "description": "Payment page displays an error",
+    "status": "IN_PROGRESS",
+    "priority": "P1",
+    "category": "Billing",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Account locked",
+    "description": "Customer account is locked",
+    "status": "WAITING_ON_CUSTOMER",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Unable to upload document",
+    "description": "Document upload is failing",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Technical",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Incorrect invoice amount",
+    "description": "Invoice displays an incorrect amount",
+    "status": "OPEN",
+    "priority": "P1",
+    "category": "Billing",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Notification not received",
+    "description": "Customer is not receiving notifications",
+    "status": "RESOLVED",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Mobile page alignment",
+    "description": "Mobile page layout is incorrect",
+    "status": "OPEN",
+    "priority": "P4",
+    "category": "Technical",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Cannot change email",
+    "description": "Customer cannot change registered email",
+    "status": "IN_PROGRESS",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Duplicate payment",
+    "description": "Customer reports duplicate payment",
+    "status": "OPEN",
+    "priority": "P1",
+    "category": "Billing",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Search not working",
+    "description": "Search results are not displayed",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Technical",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Ticket attachment missing",
+    "description": "Uploaded attachment is missing",
+    "status": "WAITING_ON_CUSTOMER",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Refund status query",
+    "description": "Customer wants refund status information",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Unable to access account",
+    "description": "Customer cannot access account",
+    "status": "IN_PROGRESS",
+    "priority": "P1",
+    "category": "Account",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Browser compatibility issue",
+    "description": "Application does not work correctly in browser",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Invoice download failed",
+    "description": "Invoice download is unsuccessful",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Session expires quickly",
+    "description": "User session expires unexpectedly",
+    "status": "RESOLVED",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Account verification pending",
+    "description": "Account verification is still pending",
+    "status": "WAITING_ON_CUSTOMER",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Support page unavailable",
+    "description": "Support page is unavailable",
+    "status": "OPEN",
+    "priority": "P1",
+    "category": "Technical",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Incorrect user details",
+    "description": "User details are displayed incorrectly",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Account",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Payment confirmation missing",
+    "description": "Payment confirmation was not received",
+    "status": "IN_PROGRESS",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] File preview issue",
+    "description": "Uploaded file preview is not working",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Password change failed",
+    "description": "Customer cannot change password",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Billing history unavailable",
+    "description": "Billing history is not displayed",
+    "status": "RESOLVED",
+    "priority": "P3",
+    "category": "Billing",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Application timeout",
+    "description": "Application request is timing out",
+    "status": "OPEN",
+    "priority": "P1",
+    "category": "Technical",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Email update confirmation",
+    "description": "Email update confirmation is missing",
+    "status": "WAITING_ON_CUSTOMER",
+    "priority": "P3",
+    "category": "Account",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Incorrect transaction date",
+    "description": "Transaction date is incorrect",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Help section not opening",
+    "description": "Help section does not open",
+    "status": "OPEN",
+    "priority": "P4",
+    "category": "Technical",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Two factor authentication issue",
+    "description": "Two factor authentication is failing",
+    "status": "IN_PROGRESS",
+    "priority": "P1",
+    "category": "Account",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Payment receipt unavailable",
+    "description": "Payment receipt cannot be downloaded",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Page refresh problem",
+    "description": "Page refresh causes an error",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] User profile picture missing",
+    "description": "Profile picture is not visible",
+    "status": "RESOLVED",
+    "priority": "P4",
+    "category": "Account",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Subscription details incorrect",
+    "description": "Subscription details are incorrect",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Login OTP delayed",
+    "description": "Login OTP is delayed",
+    "status": "IN_PROGRESS",
+    "priority": "P1",
+    "category": "Account",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Application menu issue",
+    "description": "Application menu is not opening",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Tax amount incorrect",
+    "description": "Tax amount is calculated incorrectly",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Session logout issue",
+    "description": "Customer is logged out unexpectedly",
+    "status": "WAITING_ON_CUSTOMER",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Contact form unavailable",
+    "description": "Contact form cannot be submitted",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Refund request pending",
+    "description": "Refund request is still pending",
+    "status": "IN_PROGRESS",
+    "priority": "P1",
+    "category": "Billing",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Unable to edit profile",
+    "description": "Profile editing is unsuccessful",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Application page error",
+    "description": "Application page displays an error",
+    "status": "OPEN",
+    "priority": "P1",
+    "category": "Technical",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Invoice email missing",
+    "description": "Invoice email was not received",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Billing",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Account notification settings",
+    "description": "Notification settings cannot be saved",
+    "status": "RESOLVED",
+    "priority": "P4",
+    "category": "Account",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Attachment size issue",
+    "description": "Customer cannot upload a document",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Technical",
+    "createdByEmail": "customer1@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Transaction history missing",
+    "description": "Transaction history is unavailable",
+    "status": "IN_PROGRESS",
+    "priority": "P1",
+    "category": "Billing",
+    "createdByEmail": "customer2@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  },
+  {
+    "title": "[SEED] Password validation issue",
+    "description": "New password is rejected unexpectedly",
+    "status": "OPEN",
+    "priority": "P2",
+    "category": "Account",
+    "createdByEmail": "customer3@demo.local",
+    "assigneeEmail": "agent3@demo.local"
+  },
+  {
+    "title": "[SEED] Dashboard data incorrect",
+    "description": "Dashboard displays incorrect information",
+    "status": "OPEN",
+    "priority": "P3",
+    "category": "Technical",
+    "createdByEmail": "customer4@demo.local",
+    "assigneeEmail": "agent1@demo.local"
+  },
+  {
+    "title": "[SEED] Payment method update",
+    "description": "Customer cannot update payment method",
+    "status": "WAITING_ON_CUSTOMER",
+    "priority": "P2",
+    "category": "Billing",
+    "createdByEmail": "customer5@demo.local",
+    "assigneeEmail": "agent2@demo.local"
+  }
+]

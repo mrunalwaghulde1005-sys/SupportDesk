@@ -1,0 +1,51 @@
+﻿title,description,status,priority,category,createdByEmail,assigneeEmail
+[SEED] Login page not loading,Customer cannot open the login page,OPEN,P1,Technical,customer1@demo.local,agent1@demo.local
+[SEED] Password reset email missing,Password reset email was not received,OPEN,P2,Account,customer2@demo.local,agent2@demo.local
+[SEED] Dashboard loading slowly,Dashboard takes too long to load,IN_PROGRESS,P2,Technical,customer3@demo.local,agent1@demo.local
+[SEED] Profile update issue,Customer cannot update profile details,OPEN,P3,Account,customer4@demo.local,agent3@demo.local
+[SEED] Payment page error,Payment page displays an error,IN_PROGRESS,P1,Billing,customer5@demo.local,agent2@demo.local
+[SEED] Account locked,Customer account is locked,WAITING_ON_CUSTOMER,P2,Account,customer1@demo.local,agent3@demo.local
+[SEED] Unable to upload document,Document upload is failing,OPEN,P2,Technical,customer2@demo.local,agent1@demo.local
+[SEED] Incorrect invoice amount,Invoice displays an incorrect amount,OPEN,P1,Billing,customer3@demo.local,agent2@demo.local
+[SEED] Notification not received,Customer is not receiving notifications,RESOLVED,P3,Technical,customer4@demo.local,agent3@demo.local
+[SEED] Mobile page alignment,Mobile page layout is incorrect,OPEN,P4,Technical,customer5@demo.local,agent1@demo.local
+[SEED] Cannot change email,Customer cannot change registered email,IN_PROGRESS,P2,Account,customer1@demo.local,agent2@demo.local
+[SEED] Duplicate payment,Customer reports duplicate payment,OPEN,P1,Billing,customer2@demo.local,agent3@demo.local
+[SEED] Search not working,Search results are not displayed,OPEN,P2,Technical,customer3@demo.local,agent1@demo.local
+[SEED] Ticket attachment missing,Uploaded attachment is missing,WAITING_ON_CUSTOMER,P3,Technical,customer4@demo.local,agent2@demo.local
+[SEED] Refund status query,Customer wants refund status information,OPEN,P2,Billing,customer5@demo.local,agent3@demo.local
+[SEED] Unable to access account,Customer cannot access account,IN_PROGRESS,P1,Account,customer1@demo.local,agent1@demo.local
+[SEED] Browser compatibility issue,Application does not work correctly in browser,OPEN,P3,Technical,customer2@demo.local,agent2@demo.local
+[SEED] Invoice download failed,Invoice download is unsuccessful,OPEN,P2,Billing,customer3@demo.local,agent3@demo.local
+[SEED] Session expires quickly,User session expires unexpectedly,RESOLVED,P3,Technical,customer4@demo.local,agent1@demo.local
+[SEED] Account verification pending,Account verification is still pending,WAITING_ON_CUSTOMER,P2,Account,customer5@demo.local,agent2@demo.local
+[SEED] Support page unavailable,Support page is unavailable,OPEN,P1,Technical,customer1@demo.local,agent3@demo.local
+[SEED] Incorrect user details,User details are displayed incorrectly,OPEN,P3,Account,customer2@demo.local,agent1@demo.local
+[SEED] Payment confirmation missing,Payment confirmation was not received,IN_PROGRESS,P2,Billing,customer3@demo.local,agent2@demo.local
+[SEED] File preview issue,Uploaded file preview is not working,OPEN,P3,Technical,customer4@demo.local,agent3@demo.local
+[SEED] Password change failed,Customer cannot change password,OPEN,P2,Account,customer5@demo.local,agent1@demo.local
+[SEED] Billing history unavailable,Billing history is not displayed,RESOLVED,P3,Billing,customer1@demo.local,agent2@demo.local
+[SEED] Application timeout,Application request is timing out,OPEN,P1,Technical,customer2@demo.local,agent3@demo.local
+[SEED] Email update confirmation,Email update confirmation is missing,WAITING_ON_CUSTOMER,P3,Account,customer3@demo.local,agent1@demo.local
+[SEED] Incorrect transaction date,Transaction date is incorrect,OPEN,P2,Billing,customer4@demo.local,agent2@demo.local
+[SEED] Help section not opening,Help section does not open,OPEN,P4,Technical,customer5@demo.local,agent3@demo.local
+[SEED] Two factor authentication issue,Two factor authentication is failing,IN_PROGRESS,P1,Account,customer1@demo.local,agent1@demo.local
+[SEED] Payment receipt unavailable,Payment receipt cannot be downloaded,OPEN,P2,Billing,customer2@demo.local,agent2@demo.local
+[SEED] Page refresh problem,Page refresh causes an error,OPEN,P3,Technical,customer3@demo.local,agent3@demo.local
+[SEED] User profile picture missing,Profile picture is not visible,RESOLVED,P4,Account,customer4@demo.local,agent1@demo.local
+[SEED] Subscription details incorrect,Subscription details are incorrect,OPEN,P2,Billing,customer5@demo.local,agent2@demo.local
+[SEED] Login OTP delayed,Login OTP is delayed,IN_PROGRESS,P1,Account,customer1@demo.local,agent3@demo.local
+[SEED] Application menu issue,Application menu is not opening,OPEN,P3,Technical,customer2@demo.local,agent1@demo.local
+[SEED] Tax amount incorrect,Tax amount is calculated incorrectly,OPEN,P2,Billing,customer3@demo.local,agent2@demo.local
+[SEED] Session logout issue,Customer is logged out unexpectedly,WAITING_ON_CUSTOMER,P2,Account,customer4@demo.local,agent3@demo.local
+[SEED] Contact form unavailable,Contact form cannot be submitted,OPEN,P3,Technical,customer5@demo.local,agent1@demo.local
+[SEED] Refund request pending,Refund request is still pending,IN_PROGRESS,P1,Billing,customer1@demo.local,agent2@demo.local
+[SEED] Unable to edit profile,Profile editing is unsuccessful,OPEN,P2,Account,customer2@demo.local,agent3@demo.local
+[SEED] Application page error,Application page displays an error,OPEN,P1,Technical,customer3@demo.local,agent1@demo.local
+[SEED] Invoice email missing,Invoice email was not received,OPEN,P3,Billing,customer4@demo.local,agent2@demo.local
+[SEED] Account notification settings,Notification settings cannot be saved,RESOLVED,P4,Account,customer5@demo.local,agent3@demo.local
+[SEED] Attachment size issue,Customer cannot upload a document,OPEN,P2,Technical,customer1@demo.local,agent1@demo.local
+[SEED] Transaction history missing,Transaction history is unavailable,IN_PROGRESS,P1,Billing,customer2@demo.local,agent2@demo.local
+[SEED] Password validation issue,New password is rejected unexpectedly,OPEN,P2,Account,customer3@demo.local,agent3@demo.local
+[SEED] Dashboard data incorrect,Dashboard displays incorrect information,OPEN,P3,Technical,customer4@demo.local,agent1@demo.local
+[SEED] Payment method update,Customer cannot update payment method,WAITING_ON_CUSTOMER,P2,Billing,customer5@demo.local,agent2@demo.local
