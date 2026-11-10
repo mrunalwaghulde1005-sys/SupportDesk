@@ -1,0 +1,190 @@
+{
+  "info": {
+    "name": "SupportDesk API",
+    "description": "Smoke tests and ticket CRUD for the SupportDesk TypeScript API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "createdById", "value": "1" },
+    { "key": "ticketId", "value": "" },
+    { "key": "apiKey", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "description": "Expected: HTTP 200 and a { data, error, meta } response. No API key is required.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "const body = pm.response.json();",
+              "pm.expect(body).to.have.all.keys('data', 'error', 'meta');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Create ticket",
+      "description": "Expected: HTTP 201. Requires a valid createdById and an existing database user.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('created', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.test('standard response envelope', function () { pm.expect(body).to.have.all.keys('data', 'error', 'meta'); });",
+              "pm.collectionVariables.set('ticketId', body.data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Postman test ticket\",\n  \"description\": \"Created by the SupportDesk Postman collection.\",\n  \"status\": \"OPEN\",\n  \"priority\": \"P3\",\n  \"category\": \"General\",\n  \"createdById\": {{createdById}}\n}"
+        },
+        "url": "{{baseUrl}}/tickets"
+      }
+    },
+    {
+      "name": "List tickets",
+      "description": "Expected: HTTP 200 with a ticket array and pagination in meta.",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "url": "{{baseUrl}}/tickets?page=1&limit=20"
+      }
+    },
+    {
+      "name": "Read created ticket",
+      "description": "Expected: HTTP 200 with the created ticket.",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "url": "{{baseUrl}}/tickets/{{ticketId}}"
+      }
+    },
+    {
+      "name": "Update created ticket",
+      "description": "Expected: HTTP 200 with the updated ticket.",
+      "request": {
+        "method": "PATCH",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"priority\": \"P2\"\n}"
+        },
+        "url": "{{baseUrl}}/tickets/{{ticketId}}"
+      }
+    },
+    {
+      "name": "Close created ticket",
+      "description": "Expected: HTTP 200 with status CLOSED.",
+      "request": {
+        "method": "PATCH",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "url": "{{baseUrl}}/tickets/{{ticketId}}/close"
+      }
+    },
+    {
+      "name": "Reopen created ticket",
+      "description": "Expected: HTTP 200 with status OPEN.",
+      "request": {
+        "method": "PATCH",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "url": "{{baseUrl}}/tickets/{{ticketId}}/reopen"
+      }
+    },
+    {
+      "name": "Delete created ticket",
+      "description": "Expected: HTTP 200 with the deleted ticket. May fail when related records exist.",
+      "request": {
+        "method": "DELETE",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "url": "{{baseUrl}}/tickets/{{ticketId}}"
+      }
+    },
+    {
+      "name": "Invalid ticket body",
+      "description": "Expected: HTTP 400 with error.code VALIDATION_ERROR and the standard response envelope.",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": "{{baseUrl}}/tickets"
+      }
+    },
+    {
+      "name": "Invalid ticket ID",
+      "description": "Expected: HTTP 400 with error.code VALIDATION_ERROR.",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "url": "{{baseUrl}}/tickets/not-a-number"
+      }
+    },
+    {
+      "name": "Ticket not found",
+      "description": "Expected: HTTP 404 with error.code TICKET_NOT_FOUND.",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+        },
+        "url": "{{baseUrl}}/tickets/2147483647"
+      }
+    },
+    {
+      "name": "Missing API key",
+      "description": "Expected: HTTP 401 with error.code UNAUTHORIZED. This request intentionally omits Authorization.",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/tickets"
+      }
+    }
+  ]
+}
