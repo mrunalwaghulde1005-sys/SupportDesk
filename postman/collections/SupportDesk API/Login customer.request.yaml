@@ -1,0 +1,18 @@
+$kind: http-request
+url: http://localhost:3000/auth/login
+method: POST
+headers:
+  - key: ""
+    value: ""
+    disabled: true
+    description: ""
+body:
+  type: json
+  content: "{\r
+
+    \  \"email\": \"customer-day10-20261112@example.com\",\r
+
+    \  \"password\": \"TestPass123\"\r
+
+    }"
+order: 14000

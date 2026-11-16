@@ -1,0 +1,8 @@
+$kind: http-request
+url: http://localhost:3000/tickets/999999
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+order: 11000

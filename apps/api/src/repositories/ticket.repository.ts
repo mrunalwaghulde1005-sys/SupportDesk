@@ -1,3 +1,4 @@
+
 import { Prisma, PrismaClient } from "../generated/prisma/client.ts";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "../config/env.ts";
@@ -38,11 +39,16 @@ function translatePrismaError(error: unknown): never {
   throw error;
 }
 
-export async function findTickets(query: TicketListQuery) {
+export async function findTickets(
+  query: TicketListQuery,
+  createdById?: number,
+) {
   const where: Prisma.TicketWhereInput = {
     ...(query.status ? { status: query.status } : {}),
     ...(query.priority ? { priority: query.priority } : {}),
+    ...(createdById !== undefined ? { createdById } : {}),
   };
+
   const skip = (query.page - 1) * query.limit;
 
   const [data, total] = await Promise.all([
