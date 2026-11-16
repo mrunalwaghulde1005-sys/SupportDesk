@@ -1,0 +1,30 @@
+name: Health
+description: |-
+  GET – Health Check
+  Endpoint: GET /health
+  Purpose: Checks whether the SupportDesk API server is running.
+  Request Body: None.
+  Expected Response: 200 OK
+  Response Example:
+  {
+  "data":{
+  "status": "OK",
+  "message": "SupportDesk API is running"
+  },
+  "error": null,
+  "meta": null
+  }
+url: http://localhost:3000/health
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{api_key}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.response.to.have.status(200);
+      const body = pm.response.json();
+      pm.expect(body).to.have.all.keys('data', 'error', 'meta');
+    language: text/javascript
+order: 505

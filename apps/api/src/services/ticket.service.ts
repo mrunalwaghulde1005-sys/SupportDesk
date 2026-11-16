@@ -1,3 +1,4 @@
+
 import { TicketStatus } from "../domain/ticket.ts";
 import { HttpError } from "../http/errors.ts";
 import * as ticketRepository from "../repositories/ticket.repository.ts";
@@ -7,8 +8,45 @@ import type {
   UpdateTicketInput,
 } from "../validation/ticket.schemas.ts";
 
-export async function listTickets(query: TicketListQuery) {
-  const result = await ticketRepository.findTickets(query);
+type AuthenticatedUser = {
+  id: number;
+  role: "CUSTOMER" | "AGENT" | "ADMIN";
+};
+
+function isCustomer(user: AuthenticatedUser): boolean {
+  return user.role === "CUSTOMER";
+}
+
+async function getTicketForUser(
+  id: number,
+  user: AuthenticatedUser,
+) {
+  const ticket = await ticketRepository.findTicketById(id);
+
+  if (!ticket) {
+    throw new HttpError(404, "TICKET_NOT_FOUND", "Ticket not found.");
+  }
+
+  if (isCustomer(user) && ticket.createdById !== user.id) {
+    throw new HttpError(
+      403,
+      "FORBIDDEN",
+      "You do not have permission to access this ticket.",
+    );
+  }
+
+  return ticket;
+}
+
+export async function listTickets(
+  query: TicketListQuery,
+  user: AuthenticatedUser,
+) {
+  const result = await ticketRepository.findTickets(
+    query,
+    isCustomer(user) ? user.id : undefined,
+  );
+
   return {
     data: result.data,
     meta: {
@@ -20,38 +58,60 @@ export async function listTickets(query: TicketListQuery) {
   };
 }
 
-export async function getTicket(id: number) {
-  const ticket = await ticketRepository.findTicketById(id);
-  if (!ticket) {
-    throw new HttpError(404, "TICKET_NOT_FOUND", "Ticket not found.");
-  }
-  return ticket;
+export async function getTicket(
+  id: number,
+  user: AuthenticatedUser,
+) {
+  return getTicketForUser(id, user);
 }
 
 export function createTicket(input: CreateTicketInput) {
   return ticketRepository.createTicket(input);
 }
 
-export function updateTicket(id: number, input: UpdateTicketInput) {
+export async function updateTicket(
+  id: number,
+  input: UpdateTicketInput,
+  user: AuthenticatedUser,
+) {
+  await getTicketForUser(id, user);
   return ticketRepository.updateTicket(id, input);
 }
 
-export function deleteTicket(id: number) {
+export async function deleteTicket(
+  id: number,
+  user: AuthenticatedUser,
+) {
+  await getTicketForUser(id, user);
   return ticketRepository.deleteTicket(id);
 }
 
-export async function closeTicket(id: number) {
-  const ticket = await getTicket(id);
+export async function closeTicket(
+  id: number,
+  user: AuthenticatedUser,
+) {
+  const ticket = await getTicketForUser(id, user);
+
   if (ticket.status === TicketStatus.CLOSED) {
     throw new HttpError(400, "TICKET_ALREADY_CLOSED", "Ticket is already closed.");
   }
-  return ticketRepository.updateTicket(id, { status: TicketStatus.CLOSED });
+
+  return ticketRepository.updateTicket(id, {
+    status: TicketStatus.CLOSED,
+  });
 }
 
-export async function reopenTicket(id: number) {
-  const ticket = await getTicket(id);
+export async function reopenTicket(
+  id: number,
+  user: AuthenticatedUser,
+) {
+  const ticket = await getTicketForUser(id, user);
+
   if (ticket.status === TicketStatus.OPEN) {
     throw new HttpError(400, "TICKET_ALREADY_OPEN", "Ticket is already open.");
   }
-  return ticketRepository.updateTicket(id, { status: TicketStatus.OPEN });
+
+  return ticketRepository.updateTicket(id, {
+    status: TicketStatus.OPEN,
+  });
 }

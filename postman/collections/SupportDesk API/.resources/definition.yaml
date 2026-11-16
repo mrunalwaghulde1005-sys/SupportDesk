@@ -1,0 +1,24 @@
+$kind: collection
+description: Smoke tests and ticket CRUD for the SupportDesk TypeScript API.
+variables:
+  - key: baseUrl
+    value: http://localhost:3000
+    disabled: false
+  - key: createdById
+    value: "1"
+    disabled: false
+  - key: ticketId
+    value: ""
+    disabled: false
+  - key: apiKey
+    value: ""
+    disabled: false
+  - key: json_web_token_0tf4
+    secret: true
+    disabled: false
+  - key: json_web_token_0zf0
+    secret: true
+    disabled: false
+  - key: json_web_token_1cqp
+    secret: true
+    disabled: false

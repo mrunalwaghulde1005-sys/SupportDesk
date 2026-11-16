@@ -12,6 +12,13 @@ export const envSchema = z.object({
   API_KEY: z
     .string({ error: "API_KEY is required" })
     .min(32, "API_KEY must be at least 32 characters"),
+  JWT_SECRET: z
+    .string({ error: "JWT_SECRET is required" })
+    .min(32, "JWT_SECRET must be at least 32 characters"),
+      CORS_ORIGIN: z
+    .string()
+    .min(1, "CORS_ORIGIN is required")
+    .default("http://localhost:3000"),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   NODE_ENV: z
     .enum(["development", "test", "production"])

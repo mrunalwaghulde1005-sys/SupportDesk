@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://localhost:3000/tickets
+method: POST
+headers:
+  Content-Type: application/json
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"

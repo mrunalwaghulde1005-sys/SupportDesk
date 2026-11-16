@@ -1,3 +1,4 @@
+
 import { TicketPriority, TicketStatus } from "../domain/ticket.ts";
 import { z } from "zod";
 
@@ -7,7 +8,6 @@ const ticketFields = {
   status: z.enum(TicketStatus),
   priority: z.enum(TicketPriority),
   category: z.string().trim().min(1),
-  createdById: z.number().int().positive(),
   assigneeId: z.number().int().positive().nullable().optional(),
   slaDueAt: z
     .iso
@@ -38,6 +38,9 @@ export const ticketListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export type CreateTicketInput = z.infer<typeof createTicketSchema>;
+export type CreateTicketInput = z.infer<typeof createTicketSchema> & {
+  createdById: number;
+};
+
 export type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
 export type TicketListQuery = z.infer<typeof ticketListQuerySchema>;
