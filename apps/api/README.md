@@ -52,11 +52,15 @@ excludes request bodies and credentials.
 | PATCH | `/tickets/:id/close` | Set status to `CLOSED` |
 | PATCH | `/tickets/:id/reopen` | Set status to `OPEN` |
 
-All `/tickets` endpoints require `Authorization: Bearer <API_KEY>`. `API_KEY`
-is a shared bearer key, not per-user authentication or role-based access.
-Provide it through the environment; never put the actual key in source control,
-Postman collections, or logs. `/health` remains public and does not check the
-database.
+All `/tickets` endpoints in the active TypeScript app require
+`Authorization: Bearer <token>` issued by `/auth/login`. The token is a
+one-hour JWT and identifies the authenticated user. `/health` remains public
+and does not check the database.
+
+`API_KEY` is still required by the current environment validation, but the
+active TypeScript ticket routes use JWT authentication rather than the
+API-key middleware. Confirm whether the unused setting should be removed
+before changing startup configuration or authentication behavior.
 
 Ticket creation requires `title`, `description`, `status`, `priority`,
 `category`, and an existing `createdById`. `assigneeId` and `slaDueAt` are
@@ -82,14 +86,13 @@ messages are not returned to clients.
 
 ## Postman
 
-Import [`postman/SupportDesk.postman_collection.json`](./postman/SupportDesk.postman_collection.json).
-Set `baseUrl` to the API URL, `apiKey` to the configured environment key, and
-`createdById` to an existing user ID before running the collection. The
-collection includes health, list, create, retrieve, update, close, reopen,
-delete, invalid-body, invalid-ID, not-found, and missing-key requests. The
-create request saves its returned ticket ID for subsequent requests. The
-expected status is documented on each request; health is public, while ticket
-requests use the configured bearer key.
+The current request files are under `postman/collections/SupportDesk API/`.
+The previously documented JSON collection file is not present in this
+checkout. Ticket requests use several different bearer-token variable names
+(`api_key`, `access_token`, and `json_web_token_1cqp`); validate those
+requests against the active JWT authentication flow before relying on them as
+API demonstration evidence. Do not store real credentials or tokens in
+Postman files committed to source control.
 
 The API tests do not alter schema or migration files. No database migration is
 run automatically.

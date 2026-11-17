@@ -15,4 +15,8 @@ body:
     \  \"password\": \"TestPass123\"\r
 
     }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0qi6}}"
 order: 14000

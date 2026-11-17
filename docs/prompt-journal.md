@@ -97,3 +97,85 @@
   may be consumed by the corresponding AI coding tools, so they were preserved.
 
 No environment values, credentials, or real API keys are recorded here.
+
+## Day 13: Frontend foundation and previous-task audit
+
+### Prompts and approved decisions
+
+- Build a React, Vite, TypeScript, Tailwind, TanStack Query, and React Hook
+  Form foundation using the existing backend login contract.
+- Audit Days 10–12 using repository evidence, preserve uncommitted work, and
+  report missing task briefs instead of guessing at permissions or features.
+- Investigate the reported mobile login click issue with Playwright geometry
+  and hit testing before changing CSS.
+- Approved choices: create `apps/web`, add its frontend and test dependencies,
+  use `sessionStorage` for the one-hour JWT, and proxy local API requests to
+  `http://localhost:3000`.
+
+### Changes made
+
+- Added the React/Vite frontend with strict TypeScript, Tailwind, React Router,
+  TanStack Query, React Hook Form, a shared typed API client, login/auth state,
+  protected routes, responsive application shell, and focused UI tests.
+- The client uses the confirmed `POST /auth/login` request and
+  `{ data, error, meta }` response. The token is stored in `sessionStorage`;
+  passwords are not stored. No backend authentication or CORS code was
+  changed.
+- Added `apps/web/.env.example` with the local API base URL. Vite proxies
+  `/auth` and `/tickets` to that URL in development.
+- Updated the successful-login UI test to verify trimmed email input matches
+  the backend's email trimming behavior.
+- No layout CSS fix was made: current Playwright geometry does not show
+  overlapping controls, so the earlier reported interception was not
+  reproduced in the fresh browser page.
+- No Day 10–12 backend feature or authorization changes were made because
+  authoritative briefs and permission decisions were not available.
+
+### Verification evidence
+
+- `apps/web`: `npm.cmd run typecheck` passed.
+- `apps/web`: `npm.cmd test` passed, 2 test files and 11 tests.
+- `apps/web`: `npm.cmd run build` passed with Vite 8.3.8.
+- `apps/api`: `npm.cmd run typecheck` passed.
+- `apps/api`: `npm.cmd test` passed, 4 suites and 29 tests. The Jest suite
+  mocks repositories/Prisma; no isolated integration-test suite is configured.
+- The web package has no configured lint or format-check script.
+- Playwright measured the button at `(40, 579.6)` with size `310.4 × 48` at
+  390×844, and `(772.8, 501.6)` with size `358.4 × 48` at 1366×768. At each
+  button center, `document.elementFromPoint()` returned the button; the email
+  and password controls did not overlap its rectangle. The hit stack contained
+  the button and its normal ancestors only.
+- Actual browser fill-and-click succeeded at both viewports. The UI then showed
+  a safe temporary-unavailable message because the API proxy returned 502
+  while the API server was stopped. During an earlier local API run, a dummy
+  login request returned a sanitized 500 after a Prisma request error. A
+  successful database-backed login could not be verified.
+- Saved the full Playwright measurements outside the repository at
+  `C:\Users\mruna\.copilot\session-state\b47874b5-24b0-4ae9-9825-6e4a982c4b1f\files\supportdesk-day13-layout-diagnostics.json`.
+
+### Audit findings and pending decisions
+
+- No authoritative Day 10–12 task briefs or Notion exports were found in the
+  current checkout. Current documentation describes Day 9 only.
+- The API README/env validation mention a shared API key, while current ticket
+  routes use JWT authentication. Which contract is intended requires lead
+  confirmation. Updated the API README to describe the active JWT route
+  behavior; left environment validation and security behavior unchanged.
+- The README's old Postman JSON path was absent; current request files are
+  under `postman/collections/SupportDesk API/`. Their bearer-token variables
+  have different names, so their full JWT workflow remains unverified. Updated
+  the README to document the actual location and this verification gap rather
+  than claim the collection works.
+- Current branch has ticket filtering/pagination but no comment routes or
+  OpenAPI docs. Similar work exists on a separate commit/branch, not current
+  HEAD. Whether that work is required for Day 11 needs the actual task brief.
+- Role middleware exists but is not applied by current routes. The approved
+  role/permission matrix is missing; no role policy was invented.
+- No Day 12 review/EOD evidence was found. Prior journal test counts are
+  historical claims and were not treated as current results.
+- The backend's current database-backed login flow is blocked by a Prisma
+  error in the local environment. Its root cause has not been determined.
+- The mobile click interception remains unconfirmed: current browser evidence
+  shows no layout overlap and successful clicks. No CSS fix was justified.
+
+No passwords, JWTs, API keys, or environment values were recorded.
