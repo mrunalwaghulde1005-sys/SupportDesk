@@ -24,8 +24,10 @@ For development with reload:
 npm run dev
 ```
 
-`DATABASE_URL` is required and must be a PostgreSQL URL. `API_KEY` is also
-required and must contain at least 32 characters. `PORT` is optional and
+`DATABASE_URL` is required and must be a PostgreSQL URL. `JWT_SECRET` is
+required and must contain at least 32 characters. `API_KEY` is also required
+by startup environment validation and must contain at least 32 characters, but
+it is not used by the active TypeScript ticket routes. `PORT` is optional and
 defaults to `3000`. The API validates these values at startup. The database
 must already be running and migrated; the API does not run migrations or reset
 data.
@@ -53,14 +55,11 @@ excludes request bodies and credentials.
 | PATCH | `/tickets/:id/reopen` | Set status to `OPEN` |
 
 All `/tickets` endpoints in the active TypeScript app require
-`Authorization: Bearer <token>` issued by `/auth/login`. The token is a
-one-hour JWT and identifies the authenticated user. `/health` remains public
-and does not check the database.
-
-`API_KEY` is still required by the current environment validation, but the
-active TypeScript ticket routes use JWT authentication rather than the
-API-key middleware. Confirm whether the unused setting should be removed
-before changing startup configuration or authentication behavior.
+`Authorization: Bearer <JWT>`. The mounted `requireAuth` middleware verifies
+the JWT using `JWT_SECRET`; login and registration issue one-hour JWTs that
+identify the authenticated user. `API_KEY` remains required by startup
+environment validation, but it is not used by the active TypeScript ticket
+routes. `/health` remains public and does not check the database.
 
 Ticket creation requires `title`, `description`, `status`, `priority`,
 `category`, and an existing `createdById`. `assigneeId` and `slaDueAt` are
@@ -75,7 +74,7 @@ related rows prevent deletion.
 | Health or successful read/list/update/close/reopen/delete | 200 | — |
 | Ticket created | 201 | — |
 | Invalid JSON, ticket fields, filters, or ID format | 400 | `INVALID_JSON` or `VALIDATION_ERROR` |
-| Missing or incorrect API key | 401 | `UNAUTHORIZED` |
+| Missing, invalid, or expired JWT Bearer token | 401 | `UNAUTHORIZED` |
 | Ticket does not exist | 404 | `TICKET_NOT_FOUND` |
 | Related-record or unique-value conflict | 409 | `RELATED_RECORD_CONFLICT` or `CONFLICT` |
 | Unexpected database/server failure | 500 | `INTERNAL_SERVER_ERROR` |

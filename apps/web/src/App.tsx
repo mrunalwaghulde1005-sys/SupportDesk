@@ -35,6 +35,12 @@ function ApplicationRoutes(): ReactElement {
     <Routes>
       <Route
         element={
+          <Navigate to={isAuthenticated ? "/app" : "/login"} replace />
+        }
+        path="/"
+      />
+      <Route
+        element={
           isAuthenticated ? <Navigate to="/app" replace /> : <LoginPage />
         }
         path="/login"

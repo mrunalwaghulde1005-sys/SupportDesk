@@ -57,6 +57,17 @@ describe("SupportDesk frontend foundation", () => {
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
+  it("opens the login page when the site root is loaded", async () => {
+    window.history.replaceState(null, "", "/");
+    render(<App />);
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Sign in to your account",
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("shows required errors without sending an empty login", async () => {
     const user = userEvent.setup();
     render(<App />);
