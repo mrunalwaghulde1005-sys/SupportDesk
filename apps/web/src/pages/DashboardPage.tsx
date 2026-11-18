@@ -1,8 +1,7 @@
 import type { ReactElement } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { useAuthentication } from "../features/auth/auth-context";
-import { ticketApi, type Ticket } from "../features/tickets/api/tickets-api";
+import { type Ticket } from "../features/tickets/api/tickets-api";
+import { useTickets } from "../features/tickets/hooks/use-tickets";
 import { formatTicketDate } from "../lib/format-ticket-date";
 
 function label(value: string): string { return value.toLowerCase().replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()); }
@@ -14,8 +13,7 @@ function TicketRow({ ticket }: { ticket: Ticket }): ReactElement {
   </Link>;
 }
 export default function DashboardPage(): ReactElement {
-  const { session } = useAuthentication();
-  const query = useQuery({ queryKey: ["tickets"], queryFn: () => ticketApi.list(session!.token), enabled: Boolean(session) });
+  const query = useTickets();
   return <div>
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-medium text-indigo-700">Overview</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Welcome to SupportDesk</h1><p className="mt-2 text-slate-600">Track your support tickets and follow up with the support team.</p></div><Link className="rounded-xl bg-indigo-700 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-800" to="/app/tickets/new">Create ticket</Link></div>
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white"><div className="border-b border-slate-200 px-5 py-4"><h2 className="font-semibold text-slate-900">All tickets</h2></div>
