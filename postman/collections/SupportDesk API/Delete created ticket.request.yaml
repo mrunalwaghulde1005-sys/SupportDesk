@@ -1,10 +1,10 @@
 $kind: http-request
-url: http://localhost:3000/tickets/54
+url: http://localhost:3000/tickets/59
 method: DELETE
 headers:
-  x-api-key: "{{api_key}}"
+  Accept: application/json
 auth:
   type: bearer
   credentials:
-    token: "{{access_token}}"
+    token: "{{json_web_token_0qi6}}"
 order: 8000

@@ -5,11 +5,13 @@ body:
   type: json
   content: "{\r
 
-    \  \"name\": \"Test Customer\",\r
+    \  \"name\": \"Test User\",\r
 
-    \  \"email\": \"customer-day10-20261112@example.com\",\r
+    \  \"email\": \"testuser2@example.com\",\r
 
-    \  \"password\": \"TestPass123\"\r
+    \  \"password\": \"Test@12345\"\r
 
     }"
+auth:
+  type: noauth
 order: 13000

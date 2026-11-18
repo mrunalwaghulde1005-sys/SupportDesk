@@ -24,8 +24,10 @@ For development with reload:
 npm run dev
 ```
 
-`DATABASE_URL` is required and must be a PostgreSQL URL. `API_KEY` is also
-required and must contain at least 32 characters. `PORT` is optional and
+`DATABASE_URL` is required and must be a PostgreSQL URL. `JWT_SECRET` is
+required and must contain at least 32 characters. `API_KEY` is also required
+by startup environment validation and must contain at least 32 characters, but
+it is not used by the active TypeScript ticket routes. `PORT` is optional and
 defaults to `3000`. The API validates these values at startup. The database
 must already be running and migrated; the API does not run migrations or reset
 data.
@@ -52,11 +54,12 @@ excludes request bodies and credentials.
 | PATCH | `/tickets/:id/close` | Set status to `CLOSED` |
 | PATCH | `/tickets/:id/reopen` | Set status to `OPEN` |
 
-All `/tickets` endpoints require `Authorization: Bearer <API_KEY>`. `API_KEY`
-is a shared bearer key, not per-user authentication or role-based access.
-Provide it through the environment; never put the actual key in source control,
-Postman collections, or logs. `/health` remains public and does not check the
-database.
+All `/tickets` endpoints in the active TypeScript app require
+`Authorization: Bearer <JWT>`. The mounted `requireAuth` middleware verifies
+the JWT using `JWT_SECRET`; login and registration issue one-hour JWTs that
+identify the authenticated user. `API_KEY` remains required by startup
+environment validation, but it is not used by the active TypeScript ticket
+routes. `/health` remains public and does not check the database.
 
 Ticket creation requires `title`, `description`, `status`, `priority`,
 `category`, and an existing `createdById`. `assigneeId` and `slaDueAt` are
@@ -71,7 +74,7 @@ related rows prevent deletion.
 | Health or successful read/list/update/close/reopen/delete | 200 | — |
 | Ticket created | 201 | — |
 | Invalid JSON, ticket fields, filters, or ID format | 400 | `INVALID_JSON` or `VALIDATION_ERROR` |
-| Missing or incorrect API key | 401 | `UNAUTHORIZED` |
+| Missing, invalid, or expired JWT Bearer token | 401 | `UNAUTHORIZED` |
 | Ticket does not exist | 404 | `TICKET_NOT_FOUND` |
 | Related-record or unique-value conflict | 409 | `RELATED_RECORD_CONFLICT` or `CONFLICT` |
 | Unexpected database/server failure | 500 | `INTERNAL_SERVER_ERROR` |
@@ -82,14 +85,13 @@ messages are not returned to clients.
 
 ## Postman
 
-Import [`postman/SupportDesk.postman_collection.json`](./postman/SupportDesk.postman_collection.json).
-Set `baseUrl` to the API URL, `apiKey` to the configured environment key, and
-`createdById` to an existing user ID before running the collection. The
-collection includes health, list, create, retrieve, update, close, reopen,
-delete, invalid-body, invalid-ID, not-found, and missing-key requests. The
-create request saves its returned ticket ID for subsequent requests. The
-expected status is documented on each request; health is public, while ticket
-requests use the configured bearer key.
+The current request files are under `postman/collections/SupportDesk API/`.
+The previously documented JSON collection file is not present in this
+checkout. Ticket requests use several different bearer-token variable names
+(`api_key`, `access_token`, and `json_web_token_1cqp`); validate those
+requests against the active JWT authentication flow before relying on them as
+API demonstration evidence. Do not store real credentials or tokens in
+Postman files committed to source control.
 
 The API tests do not alter schema or migration files. No database migration is
 run automatically.
