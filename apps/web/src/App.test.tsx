@@ -68,6 +68,14 @@ describe("SupportDesk frontend foundation", () => {
     ).toBeInTheDocument();
   });
 
+  it("redirects an authenticated visitor from the root to the app", () => {
+    setStoredSession(Math.floor(Date.now() / 1000) + 3600);
+    window.history.replaceState(null, "", "/");
+    render(<App />);
+
+    expect(screen.getByText("Welcome to SupportDesk")).toBeInTheDocument();
+  });
+
   it("shows required errors without sending an empty login", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -165,6 +173,30 @@ describe("SupportDesk frontend foundation", () => {
     ).toBeInTheDocument();
   });
 
+  it("disables the login form while a request is pending", async () => {
+    const user = userEvent.setup();
+    let resolveLogin: ((session: Awaited<ReturnType<typeof login>>) => void) | undefined;
+    mockedLogin.mockImplementation(
+      () => new Promise((resolve) => { resolveLogin = resolve; }),
+    );
+    render(<App />);
+
+    await user.type(screen.getByLabelText("Email address"), "agent@example.com");
+    await user.type(screen.getByLabelText("Password"), "password");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+
+    const submitButton = screen.getByRole("button", { name: "Signing in..." });
+    expect(submitButton).toBeDisabled();
+    expect(screen.getByLabelText("Email address")).toBeDisabled();
+    expect(mockedLogin).toHaveBeenCalledOnce();
+
+    resolveLogin?.({
+      token: createToken(Math.floor(Date.now() / 1000) + 3600),
+      user: { id: 7, name: "Support Agent", email: "agent@example.com", role: "AGENT" },
+    });
+    expect(await screen.findByText("Welcome to SupportDesk")).toBeInTheDocument();
+  });
+
   it("redirects an unauthenticated visitor away from the protected page", async () => {
     window.history.replaceState(null, "", "/app");
     render(<App />);
@@ -229,6 +261,18 @@ describe("SupportDesk frontend foundation", () => {
     expect(
       screen.getByRole("heading", { name: "Sign in to your account" }),
     ).toBeInTheDocument();
+    expect(sessionStorage.getItem("supportdesk.auth")).toBeNull();
+  });
+
+  it("signs out by clearing the stored session and returning to login", async () => {
+    const user = userEvent.setup();
+    setStoredSession(Math.floor(Date.now() / 1000) + 3600);
+    window.history.replaceState(null, "", "/app");
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
+
+    expect(await screen.findByRole("heading", { name: "Sign in to your account" })).toBeInTheDocument();
     expect(sessionStorage.getItem("supportdesk.auth")).toBeNull();
   });
 });

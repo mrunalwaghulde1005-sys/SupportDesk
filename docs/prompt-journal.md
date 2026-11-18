@@ -179,3 +179,165 @@ No environment values, credentials, or real API keys are recorded here.
   shows no layout overlap and successful clicks. No CSS fix was justified.
 
 No passwords, JWTs, API keys, or environment values were recorded.
+
+### Day 13: current verification and review (18 November 2026)
+
+#### Task objective and prompts
+
+- Objective: compare the existing Week 3 Day 1 frontend against the supplied
+  Day 13 requirements, preserve the committed implementation, close only
+  verified coverage gaps, rerun checks, and prepare submission evidence.
+- Planning prompt: inspect repository state and map each requirement to source,
+  configuration, tests, and documentation before editing; confirm the active
+  backend contract from source.
+- Implementation prompt: add focused automated coverage only for existing
+  required behaviors that were not covered, then record actual verification.
+- Read-only review prompt: inspect the final diff and source for architecture,
+  strict typing, API configuration, JWT contract, routing, error handling,
+  accessibility, responsive behavior, secret exposure, tests, and duplication.
+- These are concise descriptions of the current task instructions, not claims
+  that the wording reproduces a historical prompt verbatim.
+
+#### Requirement-to-code audit
+
+- The repository is organized as independent `apps/web` and `apps/api` packages;
+  there is no root `package.json`.
+- Frontend route pages, shared components, `lib`, auth feature, and ticket API
+  and components exist. The specifically listed `features/tickets/hooks/`
+  directory does not exist; current ticket queries are defined at page level.
+- `apps/web/src/lib/api-client.ts` is the only frontend `fetch()` call. It
+  centralizes request headers, Bearer token attachment, envelope parsing,
+  network/error handling, and unauthorized-session clearing. Dev requests use
+  Vite's `/auth` and `/tickets` proxy configured from `VITE_API_BASE_URL`;
+  production requests use the configured base URL. The variable is documented
+  in `apps/web/.env.example`. No credentials are configured as Vite variables.
+- Source confirms `POST /auth/login` and `/auth/register`; login takes `email`
+  and `password`, and auth services return `{ user, token }` in the API
+  `{ data, error, meta }` envelope. Ticket routes are mounted behind JWT
+  `requireAuth`. `API_KEY` remains startup-required but is not used for these
+  routes. No backend auth changes were made.
+- Session state uses the existing `sessionStorage` implementation, checks token
+  expiry client-side, clears on protected-request 401, and signs out locally.
+  The server has no logout/revocation endpoint. Local route guards do not
+  replace server authorization.
+- Login validation, accessible labels, disabled/pending state, safe credential
+  and network/server errors, keyboard-operable controls, visible focus styles,
+  and responsive layout are present. The app shell includes navigation, header,
+  content, and dashboard loading, empty, and retryable error states.
+- Installed dependencies include React 19.3.1, Vite 8.3.8, TypeScript 5.9.3,
+  Tailwind CSS 4.3.5, TanStack Query 5.107.1, and React Hook Form 7.92.0.
+  Existing packages suffice; none were installed or upgraded.
+
+#### Current implementation changes
+
+- Added three focused tests in `apps/web/src/App.test.tsx` for authenticated
+  root redirection, the pending-login disabled state (preventing repeat
+  submission), and local sign-out/session clearing.
+- No production behavior, backend behavior, dependency, environment file,
+  README, or wireframe was changed. No wireframe artifact was found.
+
+#### Verification run on 18 November 2026
+
+- `apps/web`: `npm.cmd run typecheck` — passed.
+- `apps/web`: `npm.cmd test` — 3 test files passed, 21 tests passed.
+- `apps/web`: `npm.cmd run build` — passed; Vite 8.3.8 production bundle built.
+- `apps/api`: `npm.cmd run typecheck` — passed.
+- `apps/api`: `npm.cmd test` — 4 suites passed, 29 tests passed.
+- `git diff --check` — passed after the implementation edit.
+- No live backend login or manual browser/mobile test was performed during this
+  verification run. Previously documented Playwright layout/click checks and
+  the unavailable database-backed login are historical evidence only; they
+  are not represented as a current live integration pass. The DB-backed login
+  remains blocked by the previously observed Prisma request error; credentials
+  and backend availability were not established for this run.
+
+#### Read-only AI code review
+
+- Confirmed defects: none found in the final source diff. The only source diff
+  is automated coverage; production auth, route, API, and UI code is unchanged.
+- Recommendations / partial requirement: `apps/web/src/features/tickets/hooks/`
+  is absent while the requested example structure names it. Current code does
+  not need a ticket hook layer for its existing small query surface, so no empty
+  directory or unnecessary abstraction was added. Add hooks if the feature
+  scope grows or the structure is mandatory for grading.
+- Recommendation: add explicit loading and repeated-submit assertions to the
+  registration form if registration is later included in the graded scope;
+  Day 13's login-specific behavior is covered here.
+- Blockers: live valid/invalid backend login, protected endpoint, and browser
+  refresh against a running backend remain unverified without a known-good
+  local DB/test account. Manual mobile viewport verification was not rerun.
+- Learning outcomes: verify behavior from the active source contract; keep
+  client-side expiry handling separate from server JWT verification; and add
+  focused regression tests for navigation and pending-state behavior.
+
+#### Submission state
+
+- Working branch: `feat/web-login-foundation`; base commit before edits:
+  `8bf9b41`. No commit or push was made.
+- Suggested commit: `test(web): cover auth redirects and pending login`
+- Suggested PR title: `Complete Day 13 frontend foundation verification`
+- PR description: `Add focused auth navigation, pending-login, and sign-out
+  coverage; verify the existing frontend/backend contract and rerun web and API
+  checks. Live database-backed login and mobile verification remain open.`
+
+### Day 13: live verification follow-up (18 November 2026)
+
+- The browser-control host reported that it could not determine the current
+  Chrome tab URL with sufficient confidence and stopped browser interaction.
+  Therefore no current browser login-page, form-validation, authenticated
+  navigation, session refresh, sign-out, or viewport result was observed in
+  this follow-up. No browser result is claimed here.
+- The running API's `GET /health` returned HTTP 200 with `data.status` equal to
+  `ok`.
+- The running API's `GET /tickets` without an Authorization header returned
+  HTTP 401 with error code `UNAUTHORIZED` and message `Authentication is
+  required.` No credentials or token were sent.
+- The authorized ticket request and live valid/invalid login attempts were not
+  made: the browser session could not be inspected and no approved test account
+  or token was available in the observed context. These checks remain BLOCKED.
+- The ticket feature has one current dashboard query call
+  (`apps/web/src/pages/DashboardPage.tsx`, `useQuery` around line 18) and no
+  second consumer. No reusable ticket hook was extracted because that would
+  add an abstraction without current reuse. The example `hooks/` directory is
+  therefore not implemented; whether its presence is a grading requirement
+  remains a structural partial item.
+- No application source, server, credentials, or dependencies were changed.
+  No server was restarted or stopped. Browser responsive behavior at
+  375x812, 390x844, 768x1024, and 1366x768 remains unverified.
+
+### Day 13: Manual testing (user-reported, Chrome Browser DevTools)
+
+The following are the user's manual observations. They were not independently
+performed or observed by VS Code Agent, and are separate from the automated
+frontend tests and backend HTTP checks recorded above.
+
+#### Responsive UI
+
+- iPhone 16 view: login page layout appeared proper — user-reported PASS.
+- Pixel 9 view: login page layout appeared proper — user-reported PASS.
+- Desktop responsive view: login page appeared proper — user-reported PASS.
+- iPad Mini: no confirming result was provided; status remains unverified.
+- Exact viewport dimensions, browser/version details, screenshots, and device
+  settings were not provided.
+
+#### Login form validation
+
+- Empty email and password fields: validation message displayed — user-reported
+  PASS.
+- Invalid email format: validation message displayed — user-reported PASS.
+- Invalid credentials: login error message displayed — user-reported PASS.
+
+#### Authentication and navigation
+
+The user reports the following manual results as PASS:
+
+- Accessing `/app` without authentication redirected to `/login`.
+- Refreshing the login page worked.
+- Successful login worked and authenticated navigation to `/app` worked.
+- Refreshing the authenticated session worked.
+- Logout worked.
+
+These observations are user-reported and do not establish an independently
+verified API response or protected-backend request. The authorized `GET
+/tickets` request using a valid JWT remains unverified. The separate backend
+check without a JWT is recorded above as HTTP 401 `UNAUTHORIZED`.
