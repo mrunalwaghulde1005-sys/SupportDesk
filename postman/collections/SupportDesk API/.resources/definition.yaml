@@ -28,3 +28,66 @@ variables:
   - key: json_web_token_1cqp
     secret: true
     disabled: false
+  - key: json_web_token_0fzi
+    secret: true
+    disabled: false
+  - key: json_web_token_0udr
+    secret: true
+    disabled: false
+  - key: json_web_token_05gn
+    secret: true
+    disabled: false
+  - key: json_web_token_14mb
+    secret: true
+    disabled: false
+  - key: json_web_token_0zvc
+    secret: true
+    disabled: false
+  - key: json_web_token_16io
+    secret: true
+    disabled: false
+  - key: json_web_token_0xwu
+    secret: true
+    disabled: false
+  - key: json_web_token_17pq
+    secret: true
+    disabled: false
+  - key: json_web_token_0syx
+    secret: true
+    disabled: false
+  - key: json_web_token_0rml
+    secret: true
+    disabled: false
+  - key: json_web_token_0uwk
+    secret: true
+    disabled: false
+  - key: json_web_token_0gkg
+    secret: true
+    disabled: false
+  - key: json_web_token_0no0
+    secret: true
+    disabled: false
+  - key: json_web_token_1849
+    secret: true
+    disabled: false
+  - key: json_web_token_1ec0
+    secret: true
+    disabled: false
+  - key: json_web_token_1bxy
+    secret: true
+    disabled: false
+  - key: json_web_token_18zy
+    secret: true
+    disabled: false
+  - key: json_web_token_11wt
+    secret: true
+    disabled: false
+  - key: json_web_token_0mht
+    secret: true
+    disabled: false
+  - key: json_web_token_03pz
+    secret: true
+    disabled: false
+  - key: json_web_token_0cqv
+    secret: true
+    disabled: false

@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:3000/tickets
+method: GET
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_16io}}"
+order: 2000

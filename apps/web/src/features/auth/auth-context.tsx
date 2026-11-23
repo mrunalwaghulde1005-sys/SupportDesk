@@ -7,7 +7,7 @@ import {
   type PropsWithChildren,
   type ReactElement,
 } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   login as loginRequest,
   register as registerRequest,
@@ -27,7 +27,7 @@ interface AuthenticationContextValue {
   isAuthenticated: boolean;
   isLoggingIn: boolean;
   loginError: Error | null;
-  login: (credentials: LoginCredentials, onSuccess: () => void) => void;
+  login: (credentials: LoginCredentials, onSuccess: (session: AuthSession) => void) => void;
   register: (details: RegistrationDetails, onSuccess: () => void) => void;
   isRegistering: boolean;
   registrationError: Error | null;
@@ -40,26 +40,32 @@ const AuthenticationContext =
 export function AuthenticationProvider({
   children,
 }: PropsWithChildren): ReactElement {
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<AuthSession | null>(readStoredSession);
+  const activateSession = useCallback((nextSession: AuthSession) => {
+    if (
+      session !== null &&
+      (session.user.id !== nextSession.user.id || session.user.role !== nextSession.user.role)
+    ) {
+      queryClient.removeQueries();
+    }
+    storeSession(nextSession);
+    setSession(nextSession);
+  }, [queryClient, session]);
   const loginMutation = useMutation({
     mutationFn: loginRequest,
-    onSuccess: (nextSession) => {
-      storeSession(nextSession);
-      setSession(nextSession);
-    },
+    onSuccess: activateSession,
   });
   const registrationMutation = useMutation({
     mutationFn: registerRequest,
-    onSuccess: (nextSession) => {
-      storeSession(nextSession);
-      setSession(nextSession);
-    },
+    onSuccess: activateSession,
   });
 
   const clearAuthentication = useCallback(() => {
     clearStoredSession();
+    queryClient.clear();
     setSession(null);
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     setUnauthorizedHandler(clearAuthentication);
@@ -67,7 +73,7 @@ export function AuthenticationProvider({
   }, [clearAuthentication]);
 
   const login = useCallback(
-    (credentials: LoginCredentials, onSuccess: () => void) => {
+    (credentials: LoginCredentials, onSuccess: (session: AuthSession) => void) => {
       loginMutation.mutate(credentials, { onSuccess });
     },
     [loginMutation],

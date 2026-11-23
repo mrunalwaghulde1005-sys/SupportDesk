@@ -1,0 +1,11 @@
+$kind: http-request
+url: "\thttp://localhost:3000/api/admin/tickets/68/assignment"
+method: PATCH
+body:
+  type: json
+  content: "{\r\n  \"assigneeId\": 6\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_17pq}}"
+order: 3000

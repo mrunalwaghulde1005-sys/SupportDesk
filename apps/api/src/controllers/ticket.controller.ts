@@ -8,6 +8,7 @@ import {
   ticketListQuerySchema,
   updateTicketSchema,
 } from "../validation/ticket.schemas.ts";
+import { assignTicketSchema } from "../validation/admin.schemas.ts";
 
 function parseTicketId(req: Request): number {
   return ticketIdSchema.parse(req.params).id;
@@ -42,8 +43,15 @@ export async function createTicket(
     createdById: user.id,
   };
 
-  const ticket = await ticketService.createTicket(input);
+  const ticket = await ticketService.createTicket(input, user);
   sendSuccess(res, ticket, 201);
+}
+
+export async function assignTicket(req: Request, res: Response): Promise<void> {
+  const id = parseTicketId(req);
+  const { assigneeId } = assignTicketSchema.parse(req.body);
+  const ticket = await ticketService.assignTicket(id, assigneeId, getAuthenticatedUser(req));
+  sendSuccess(res, ticket);
 }
 
 export async function getTicket(req: Request, res: Response): Promise<void> {

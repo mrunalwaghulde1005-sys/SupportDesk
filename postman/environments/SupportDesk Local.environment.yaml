@@ -1,0 +1,14 @@
+name: SupportDesk Local
+values:
+  - key: baseUrl
+    value: ''
+  - key: ticketId
+    value: ''
+  - key: agentId
+    value: ''
+  - key: customerToken
+    secret: true
+  - key: agentToken
+    secret: true
+  - key: adminToken
+    secret: true

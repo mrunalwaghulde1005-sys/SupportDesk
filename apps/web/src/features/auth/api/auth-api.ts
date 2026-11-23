@@ -9,11 +9,13 @@ export interface RegistrationDetails extends LoginCredentials {
   name: string;
 }
 
+export type UserRole = "CUSTOMER" | "AGENT" | "ADMIN";
+
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: UserRole;
 }
 
 export interface AuthSession {
@@ -40,7 +42,7 @@ function isAuthSession(value: unknown): value is AuthSession {
     typeof user.id === "number" &&
     typeof user.name === "string" &&
     typeof user.email === "string" &&
-    typeof user.role === "string"
+    (user.role === "CUSTOMER" || user.role === "AGENT" || user.role === "ADMIN")
   );
 }
 

@@ -1,0 +1,21 @@
+$kind: http-request
+url: http://localhost:3000/tickets
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Internet Connection Issue\",\r
+
+    \  \"description\": \"My internet connection is not working properly.\",\r
+
+    \  \"priority\": \"P2\",\r
+
+    \  \"category\": \"Technical\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_16io}}"
+order: 1000

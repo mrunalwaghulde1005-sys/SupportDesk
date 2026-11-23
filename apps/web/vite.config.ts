@@ -1,22 +1,36 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
+import { resolve } from "node:path";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "VITE_");
-  const apiBaseUrl = env.VITE_API_BASE_URL || "http://localhost:3000";
-
+export default defineConfig(() => {
+  const apiProxyTarget = "http://localhost:3000";
   return {
     plugins: [react(), tailwindcss()],
     server: {
+      fs: {
+        allow: [
+          process.cwd(),
+          resolve(process.cwd(), "../api/src/validation"),
+          resolve(process.cwd(), "../api/src/domain"),
+          resolve(process.cwd(), "../api/node_modules/zod"),
+        ],
+      },
       proxy: {
         "/auth": {
-          target: apiBaseUrl,
+          target: apiProxyTarget,
           changeOrigin: true,
         },
         "/tickets": {
-          target: apiBaseUrl,
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
+        "/api/admin": {
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
+        "/health": {
+          target: apiProxyTarget,
           changeOrigin: true,
         },
       },

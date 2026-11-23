@@ -15,5 +15,6 @@ export function useTickets() {
       return ticketApi.list(session.token);
     },
     enabled: session !== null,
+    refetchInterval: 15_000,
   });
 }

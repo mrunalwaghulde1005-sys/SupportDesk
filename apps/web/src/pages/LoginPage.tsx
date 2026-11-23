@@ -1,9 +1,10 @@
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ApiClientError } from "../lib/api-client";
 import { useAuthentication } from "../features/auth/auth-context";
 import type { LoginCredentials } from "../features/auth/api/auth-api";
+import { dashboardPath } from "../lib/role-routes";
 
 function getErrorMessage(error: Error): string {
   if (!(error instanceof ApiClientError)) {
@@ -26,8 +27,9 @@ function getErrorMessage(error: Error): string {
 }
 
 export default function LoginPage(): ReactElement {
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, isLoggingIn, login, loginError } =
+  const { session, isAuthenticated, isLoggingIn, login, loginError } =
     useAuthentication();
   const {
     formState: { errors },
@@ -35,11 +37,11 @@ export default function LoginPage(): ReactElement {
     register,
   } = useForm<LoginCredentials>();
   if (isAuthenticated) {
-    return <Navigate to="/app" replace />;
+    return <Navigate to={dashboardPath(session!.user.role)} replace />;
   }
 
   const onSubmit: SubmitHandler<LoginCredentials> = (credentials) => {
-    login(credentials, () => navigate("/app", { replace: true }));
+    login(credentials, (session) => navigate(dashboardPath(session.user.role), { replace: true }));
   };
 
   return (
@@ -48,8 +50,8 @@ export default function LoginPage(): ReactElement {
         <section className="hidden flex-col justify-between bg-indigo-700 p-10 text-white lg:flex xl:p-14">
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-xl bg-white/15 text-lg font-bold">
-                SD
+              <span aria-hidden="true" className="flex size-11 items-center justify-center rounded-xl bg-white/15 text-2xl">
+                🎧
               </span>
               <span className="text-xl font-semibold tracking-tight">
                 SupportDesk
@@ -74,8 +76,8 @@ export default function LoginPage(): ReactElement {
 
         <section className="px-6 py-10 sm:px-12 sm:py-14 lg:px-12 xl:px-16">
           <div className="mb-10 flex items-center gap-3 lg:hidden">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-indigo-700 font-bold text-white">
-              SD
+            <span aria-hidden="true" className="flex size-10 items-center justify-center rounded-xl bg-indigo-700 text-xl text-white">
+              🎧
             </span>
             <span className="text-lg font-semibold text-slate-900">
               SupportDesk
@@ -142,20 +144,33 @@ export default function LoginPage(): ReactElement {
                 >
                   Password
                 </label>
-                <input
-                  autoComplete="current-password"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 disabled:bg-slate-100"
-                  id="password"
-                  type="password"
-                  {...register("password", {
-                    required: "Password is required.",
-                  })}
-                  aria-invalid={Boolean(errors.password)}
-                  aria-describedby={
-                    errors.password ? "password-error" : undefined
-                  }
-                  disabled={isLoggingIn}
-                />
+                <div className="relative">
+                  <input
+                    autoComplete="current-password"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-16 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 disabled:bg-slate-100"
+                    id="password"
+                    type={passwordVisible ? "text" : "password"}
+                    {...register("password", {
+                      required: "Password is required.",
+                    })}
+                    aria-invalid={Boolean(errors.password)}
+                    aria-describedby={
+                      errors.password ? "password-error" : undefined
+                    }
+                    disabled={isLoggingIn}
+                  />
+                  <button
+                    aria-label={
+                      passwordVisible ? "Hide password" : "Show password"
+                    }
+                    className="absolute inset-y-0 right-3 my-auto h-fit rounded px-2 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-2 focus-visible:outline-indigo-600"
+                    disabled={isLoggingIn}
+                    onClick={() => setPasswordVisible((visible) => !visible)}
+                    type="button"
+                  >
+                    {passwordVisible ? "Hide" : "Show"}
+                  </button>
+                </div>
                 {errors.password && (
                   <p
                     className="mt-2 text-sm text-red-700"

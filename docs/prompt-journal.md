@@ -341,3 +341,161 @@ These observations are user-reported and do not establish an independently
 verified API response or protected-backend request. The authorized `GET
 /tickets` request using a valid JWT remains unverified. The separate backend
 check without a JWT is recorded above as HTTP 401 `UNAUTHORIZED`.
+
+### Day 13: live JWT authentication verification (user-reported, 18 November 2026)
+
+- The user reports logging in through `POST /auth/login` with a registered
+  test account and receiving HTTP 200 with a JWT.
+- The user reports requesting `GET /tickets` with the JWT in the Bearer
+  Authorization header and receiving HTTP 200 with ticket data.
+- User-reported result: PASS. This records the user's live verification; the
+  agent did not independently repeat the authenticated request. The token and
+  account credentials are not included in this journal.
+- This later report updates the earlier same-day note that the authorized
+  request was still unverified at the time of the agent's own check.
+- Ticket ID 58 was retained after verification. No database deletion was
+  performed.
+
+### Day 13: remaining-evidence audit after ticket hook refactor (18 November 2026)
+
+#### Journal diff and current implementation
+
+- At the time of this review, the unstaged `docs/prompt-journal.md` diff adds
+  the user-reported live JWT verification above (14 content lines). It is not
+  only blank lines or a trailing-newline change. The report does not include a
+  token or credentials.
+- The earlier audit entry saying `features/tickets/hooks/` was absent records
+  the state before the refactor. Commit `7a6af81` now adds
+  `apps/web/src/features/tickets/hooks/use-tickets.ts` and updates
+  `DashboardPage.tsx` to call `useTickets()`. The hook uses query key
+  `["tickets"]`, the auth context, `ticketApi.list(session.token)`, an enabled
+  guard, and a missing-session safety check. No change to the API contract or
+  dashboard states was found in the refactor.
+- Read-only review of the committed hook and dashboard found no new defect:
+  the hook retains strict typing, has no `any` or non-null assertion, and keeps
+  the existing loading, error, retry, empty, and list rendering in the page.
+  This source review does not claim browser testing.
+
+#### API-unavailable scenario
+
+- `apps/web/src/App.test.tsx` covers the login page's network-error message by
+  mocking the auth request to reject with `ApiClientError("NETWORK_ERROR", ...)`.
+  This verifies UI handling of that error object, not a real API outage.
+- `apps/web/src/lib/api-client.ts` maps a fetch `TypeError` to `NETWORK_ERROR`,
+  but the current tests do not exercise an actual offline browser request or a
+  fetch rejection through the shared client. No live outage scenario is
+  recorded as passed.
+- Manual steps to verify safely: open `/login` in Chrome; open DevTools Network
+  and enable the Offline network condition; submit using test-only non-empty
+  values with a syntactically valid email; confirm the page displays “Unable to
+  reach SupportDesk. Check your connection and try again.”; then disable Offline
+  and restore the normal network condition. The Offline condition prevents the
+  request from reaching the backend. Do not use real account passwords for this
+  check.
+
+#### Browser console, network, design evidence, and review status
+
+- No browser console or Network-panel capture was found, and none was inspected
+  during this audit. Source search found no `console.*` calls in the frontend.
+  The backend request logger records request ID, method, path, status, and
+  duration; the error logger records request ID and error type. Neither logger
+  writes request bodies, authorization headers, passwords, or JWT values in
+  the inspected code. This is source inspection, not a browser-console test.
+- No Day 13 wireframe or standalone implementation-plan artifact was found.
+  The Prompt Journal contains planning-prompt summaries and an implementation
+  audit, but these do not establish that a wireframe was created.
+- The existing read-only review and findings are recorded in the earlier
+  “Read-only AI code review” section. Its missing-hooks recommendation is now
+  resolved by commit `7a6af81`; no separate code change was needed in this
+  audit.
+- Git documentation/history contains no Day 13 PR URL or PR number. The current
+  branch tracks `origin/feat/web-login-foundation`; the PR merge references in
+  the available history are for earlier work and do not establish a Day 13 PR.
+
+#### Remaining manual verification
+
+- iPad Mini responsive layout remains pending; no pass is claimed.
+- The real API-unavailable/offline browser scenario remains pending, with steps
+  above. Existing mocked UI coverage is not a substitute for that observation.
+- Browser console and Network-panel inspection remains pending. No browser test
+  evidence is claimed by this audit.
+
+## Day 15: UI quality and role-based comments
+
+### Prompt and implementation decisions
+
+- Prompt received: complete the Day 15 UI quality work after inspecting current
+  code, preserve existing uncommitted work, enforce the specified Admin / Agent
+  / Customer comment matrix, test the changes, inspect responsive layouts, and
+  record actual Lighthouse results without inventing scores.
+- Reused `dashboard-ui.tsx` for the existing API-backed status and priority
+  badges and content states. Added shared Button, Input, native dialog Modal,
+  and responsive semantic table components in `ui-components.tsx`; used them in
+  comment controls, ticket creation, ticket deletion confirmation, and Admin
+  tables.
+- Comment visibility is decided by the API from the authenticated role:
+  Admin submissions are stored as INTERNAL; Agent submissions are stored as
+  PUBLIC; Customers receive only PUBLIC comments authored by Agents. Admin
+  views exclude Admin-authored notes, while assigned Agents can see those
+  internal notes. Client-submitted visibility is ignored by the service.
+  Customer comment creation is rejected with 403, and authorId is not accepted
+  by the request schema.
+- No screenshot or wireframe for the Day 15 AI exercise was found in the
+  workspace. That screenshot-based exercise remains incomplete; no reference
+  comparison or generated design prompt is claimed.
+
+### Verification
+
+- API: Jest 5 suites / 56 tests passed; API TypeScript typecheck passed.
+- Web: Vitest 9 files / 56 tests passed; TypeScript typecheck passed; Vite
+  production build passed. Vite reported the existing main JS chunk exceeds
+  500 kB after minification (520.03 kB); no bundle splitting was done.
+- Permission coverage includes Agent/Admin visibility overrides, Customer
+  read filtering, Customer POST 403, and author/assignment checks. These API
+  tests use mocked repositories; no live Postman request or production API
+  permission check was run.
+- Responsive viewport checks at 360, 768, and 1280 px were not run. The
+  computer-use browser host returned no browser surface, so visual inspection
+  could not be performed.
+- Lighthouse was not run: the web package has no Lighthouse dependency and
+  the computer-use browser host was unavailable. Therefore, no URL-specific
+  score or audit result is claimed.
+- Source-level accessibility work includes explicit input labels and error
+  associations, visible focus styling in shared controls, semantic table
+  headers, and a native dialog with Escape handling and browser-managed focus.
+  A full browser accessibility/contrast audit remains pending.
+
+### Day 15 remaining-task pass (23 November 2026)
+
+- Inspected the ticket list/detail pages, comment thread, shared UI components,
+  API comment route/controller/service/repository/schema, existing API tests, and
+  Postman request templates before editing. Preserved the pre-existing working
+  tree; no reset, stash, commit, or push was performed.
+- Accessibility fixes: Ticket List mobile labels and desktop column labels now
+  use `text-slate-600` instead of low-contrast `text-slate-400`. Ticket Detail
+  title, category, and description validation errors are rendered inline and
+  associated with their controls using `aria-invalid`, `aria-describedby`, and
+  alert roles. Admin table headings have `scope="col"`.
+- Token-pair contrast calculations: Slate 600 on Slate 50 = 7.24:1; white on
+  Indigo 700 = 7.90:1; white on Rose 700 = 6.29:1. These checks cover the
+  mentioned interface tokens, not every color combination across the site.
+- Responsive source review: ticket rows switch from compact cards to a desktop
+  grid at `lg`; the navigation switches from a mobile menu to a desktop sidebar;
+  forms use full-width controls; the Admin table uses a horizontal scroll
+  wrapper; and the dialog width is bounded to the viewport. Actual 360/768/1280
+  browser viewport checks remain pending because the browser access host was
+  unavailable and Computer Use review rejected access to Chrome.
+- Lighthouse remains pending. The web package has no Lighthouse dependency;
+  browser access was unavailable, so no Performance, Accessibility, or Best
+  Practices score is claimed.
+- Screenshot/wireframe search found no Day 15 reference image. The screenshot
+  exercise remains pending.
+- Inspected the Admin internal-comment, Agent public-comment, Customer
+  read-only, and Customer-forbidden Postman request templates. Computer Use
+  review rejected access to Postman, so no collection request was actually run.
+  Jest API permission tests use mocked repositories and are not represented as
+  live Postman or database integration results.
+- Final verification after these source changes: API Jest 5 suites / 56 tests
+  passed; web Vitest 9 files / 56 tests passed; API and web typechecks passed;
+  web production build passed; `git diff --check` passed. Vite reported a
+  520.03 kB minified main JS chunk above its 500 kB advisory threshold.

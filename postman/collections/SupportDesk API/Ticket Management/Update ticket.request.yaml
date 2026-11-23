@@ -1,0 +1,20 @@
+$kind: http-request
+url: http://localhost:3000/tickets/68
+method: PUT
+headers:
+  Accept: application/json
+  Content-Type: application/json
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0no0}}"
+body:
+  type: json
+  content: |-
+    {
+      "title": "Login Issue - Updated",
+      "description": "I am still unable to login to my account.",
+      "priority": "P1",
+      "category": "Technical"
+    }
+order: 6000

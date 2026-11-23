@@ -1,0 +1,8 @@
+$kind: http-request
+url: "\thttp://localhost:3000/tickets/68/comments"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0syx}}"
+order: 1000

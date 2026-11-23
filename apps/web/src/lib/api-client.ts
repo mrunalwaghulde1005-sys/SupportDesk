@@ -15,6 +15,11 @@ interface ApiEnvelope {
   meta: Record<string, unknown>;
 }
 
+export interface ApiResponseWithMeta<T> {
+  data: T;
+  meta: Record<string, unknown>;
+}
+
 export class ApiClientError extends Error {
   readonly code: string;
   readonly status: number | null;
@@ -36,14 +41,10 @@ type RequestOptions = Omit<RequestInit, "body"> & {
 
 let unauthorizedHandler: (() => void) | undefined;
 
-const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-const apiBaseUrl = import.meta.env.DEV
-  ? ""
-  : configuredApiBaseUrl?.replace(/\/+$/, "");
-
-if (!import.meta.env.DEV && !apiBaseUrl) {
-  throw new Error("VITE_API_BASE_URL must be set for production builds.");
-}
+// Keep API calls same-origin in development (through Vite's proxy) and in
+// production (through Express). This also lets a forwarded frontend port proxy
+// API calls from mobile browsers without exposing a second backend URL.
+const apiBaseUrl = "";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -105,7 +106,7 @@ export function setUnauthorizedHandler(handler: () => void): void {
 async function request<T>(
   path: string,
   options: RequestOptions = {},
-): Promise<T> {
+): Promise<ApiResponseWithMeta<T>> {
   const { body, token, headers: requestHeaders, ...requestOptions } = options;
   const headers = new Headers(requestHeaders);
   headers.set("Accept", "application/json");
@@ -171,21 +172,25 @@ async function request<T>(
     );
   }
 
-  return envelope.data as T;
+  return { data: envelope.data as T, meta: envelope.meta };
 }
 
 export const apiClient = {
   get<T>(path: string, token?: string): Promise<T> {
+    return request<T>(path, { method: "GET", token }).then((response) => response.data);
+  },
+
+  getWithMeta<T>(path: string, token?: string): Promise<ApiResponseWithMeta<T>> {
     return request<T>(path, { method: "GET", token });
   },
 
   post<T>(path: string, body: unknown, token?: string): Promise<T> {
-    return request<T>(path, { method: "POST", body, token });
+    return request<T>(path, { method: "POST", body, token }).then((response) => response.data);
   },
   patch<T>(path: string, body?: unknown, token?: string): Promise<T> {
-    return request<T>(path, { method: "PATCH", body, token });
+    return request<T>(path, { method: "PATCH", body, token }).then((response) => response.data);
   },
   delete<T>(path: string, token?: string): Promise<T> {
-    return request<T>(path, { method: "DELETE", token });
+    return request<T>(path, { method: "DELETE", token }).then((response) => response.data);
   },
 };

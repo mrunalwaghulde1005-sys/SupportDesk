@@ -2,22 +2,23 @@ import type { ReactElement } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuthentication } from "../features/auth/auth-context";
+import { dashboardPath } from "../lib/role-routes";
 import type { RegistrationDetails } from "../features/auth/api/auth-api";
 import { ApiClientError } from "../lib/api-client";
 
 export default function RegisterPage(): ReactElement {
   const navigate = useNavigate();
-  const { isAuthenticated, isRegistering, registrationError, register } = useAuthentication();
+  const { session, isAuthenticated, isRegistering, registrationError, register } = useAuthentication();
   const { register: field, handleSubmit, formState: { errors } } = useForm<RegistrationDetails>();
-  if (isAuthenticated) return <Navigate to="/app" replace />;
-  const submit: SubmitHandler<RegistrationDetails> = (details) => register(details, () => navigate("/app", { replace: true }));
+  if (isAuthenticated) return <Navigate to={dashboardPath(session!.user.role)} replace />;
+  const submit: SubmitHandler<RegistrationDetails> = (details) => register(details, () => navigate("/customer/dashboard", { replace: true }));
   const serverError = registrationError instanceof ApiClientError
     ? registrationError.code === "EMAIL_ALREADY_EXISTS" ? "An account with this email already exists." : registrationError.details[0]?.message ?? "Registration could not be completed. Check your details and try again."
     : registrationError ? "Registration could not be completed. Please try again." : null;
   const inputClass = "w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 disabled:bg-slate-100";
   return <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10">
     <section className="w-full max-w-xl rounded-3xl bg-white px-6 py-10 shadow-2xl sm:px-12">
-      <Link to="/login" className="text-sm font-semibold text-indigo-700">← SupportDesk</Link>
+      <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-700"><span aria-hidden="true" className="text-lg">🎧</span> SupportDesk</Link>
       <p className="mt-8 text-sm font-semibold uppercase tracking-widest text-indigo-700">Create account</p>
       <h1 className="mt-3 text-3xl font-semibold text-slate-950">Join SupportDesk</h1>
       <p className="mt-2 text-sm text-slate-600">Create an account to manage your support tickets.</p>
