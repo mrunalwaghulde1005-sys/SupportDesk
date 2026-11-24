@@ -1,8 +1,9 @@
 import type { ReactElement } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { useAuthentication } from "../features/auth/auth-context";
 import { CommentThread } from "../features/tickets/components/CommentThread";
+import { TicketAiAssist } from "../features/tickets/components/TicketAiAssist";
 import { ticketApi } from "../features/tickets/api/tickets-api";
 
 export default function AdminTicketDetailsPage(): ReactElement {
@@ -10,6 +11,7 @@ export default function AdminTicketDetailsPage(): ReactElement {
   const id = Number(rawId);
   const validId = Number.isSafeInteger(id) && id > 0;
   const { session } = useAuthentication();
+  const client = useQueryClient();
   const query = useQuery({
     queryKey: ["ticket", "admin", session?.user.id, id],
     queryFn: () => ticketApi.get(id, session!.token),
@@ -57,6 +59,17 @@ export default function AdminTicketDetailsPage(): ReactElement {
         <div><dt className="text-slate-500">Status</dt><dd className="mt-1 font-medium">{ticket.status.replaceAll("_", " ")}</dd></div>
         <div><dt className="text-slate-500">Priority</dt><dd className="mt-1 font-medium">{ticket.priority}</dd></div>
       </dl>
+      {session && (
+        <TicketAiAssist
+          ticketId={id}
+          token={session.token}
+          isAdmin
+          onSaved={() => Promise.all([
+            client.invalidateQueries({ queryKey: ["ticket", "admin", session.user.id, id] }),
+            client.invalidateQueries({ queryKey: ["admin-tickets"] }),
+          ])}
+        />
+      )}
       {session && (
         <CommentThread
           ticketId={id}

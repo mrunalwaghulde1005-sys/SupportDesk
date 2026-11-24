@@ -499,3 +499,147 @@ check without a JWT is recorded above as HTTP 401 `UNAUTHORIZED`.
   passed; web Vitest 9 files / 56 tests passed; API and web typechecks passed;
   web production build passed; `git diff --check` passed. Vite reported a
   520.03 kB minified main JS chunk above its 500 kB advisory threshold.
+
+## Day 16: AI assistance continuation (24 November 2026)
+
+### Scope and implementation decisions
+
+- Continued the existing in-progress Day 16 files without resetting, stashing,
+  or replacing them. The tagged `apps/api/prisma/reset-agent-password.ts` file
+  was read and left unchanged.
+- Kept the backend-only OpenAI Responses HTTP adapter. It sends strict JSON
+  schema requests for categorization, disables response storage, maps provider
+  failures to sanitized API errors, and requires a completed stream before
+  reporting success.
+- Mounted the AI assistance UI on Admin and assigned-Agent ticket detail
+  pages. Reply output is an editable review draft; it is not posted or saved
+  automatically. Applying category/priority suggestions requires an explicit
+  button action and uses the existing ticket update endpoints.
+- Restricted AI endpoints to Admins and Agents. Existing ticket access checks
+  continue to enforce customer ownership and Agent assignment at the service
+  boundary.
+- Categorization is validated against a strict Zod schema before it is returned.
+  Invalid suggestions do not reach the ticket update flow.
+- Usage logging reads token counts from the provider response. Cost is an
+  estimate only when both actual input/output counts and a configured model
+  price are available; otherwise the logged cost is `null`. No live usage,
+  token counts, or charges were recorded during this work; provider values in
+  automated tests are mocked fixtures only.
+- No dependencies were added. The HTTP adapter is a deviation from OpenAI SDK
+  integration; adding/approving the SDK remains a release blocker.
+
+### Acceptance checklist from the continuation request
+
+1. **Review backend OpenAI adapter/request-response contracts — PASS.** Mocked
+   adapter tests cover endpoint, authorization/content/accept headers, model,
+   input/instructions, strict JSON schema format, non-storage option, output,
+   usage, malformed response, provider error, and streaming completion.
+2. **Suggest Reply backend/frontend streaming — PASS (mocked).** Backend SSE,
+   client delta handling, terminal events, failed/incomplete streams, and
+   ticket-detail page integration are covered. A live OpenAI request remains
+   unverified.
+3. **Auto-categorise + Priority with strict Zod validation — PASS.** Valid
+   provider output is returned as a suggestion; extra fields and invalid
+   values are rejected and are not persisted.
+4. **Actual token usage and configured pricing logs — PARTIAL.** Provider
+   usage values are parsed and logged without fabricated fallbacks, and costs
+   use the configured price map only. Live provider usage and billing were not
+   verified; model prices were not independently validated during this run.
+5. **Authentication and authorization — PASS (automated).** Tests cover
+   unauthenticated and Customer denial, Admin use, and assigned/unassigned
+   Agent access.
+6. **Mocked-provider unit and integration tests — PASS.** API adapter and
+   route/service tests were added without adding dependencies.
+7. **Frontend loading, streaming, error, and review states — PASS (automated).**
+   Component/API tests cover loading status, split SSE chunks, editable drafts,
+   errors, explicit apply actions, and Admin-versus-Agent updates. Manual
+   browser/visual verification remains pending.
+8. **Typechecks, tests, lint, and builds — PARTIAL.** API and web typechecks,
+   full tests, and the web production build passed. Neither package declares a
+   lint script; the API package also has no separate build script. Vite emitted
+   its existing >500 kB chunk-size advisory.
+9. **API-key exposure and direct browser OpenAI requests — PASS (source scan).**
+   No OpenAI key or OpenAI API URL was found in the web source. The key is
+   consumed only by the API adapter.
+10. **Update this journal without removing entries — PASS.** This section was
+    appended; previous journal entries were preserved.
+11. **Review all Day 16 acceptance criteria individually — PARTIAL.** Every
+    numbered priority in this continuation request is listed above. The
+    referenced Notion acceptance-criteria page was not available in the
+    workspace/tool results, so equivalence to any additional Notion-only
+    criteria could not be established.
+
+### Verification evidence and blockers
+
+- API: TypeScript typecheck passed; Jest **6 suites / 69 tests passed**.
+- Web: TypeScript typecheck passed; Vitest **12 files / 65 tests passed**;
+  production build passed. The generated JavaScript bundle is 527.35 kB
+  minified and triggers Vite's 500 kB advisory.
+- `git diff --check` passed after the final journal append. New/added files
+  also passed a trailing-whitespace scan.
+- No live OpenAI request, live billing verification, or manual browser
+  interaction was performed. No real API key or production token/cost data is
+  recorded here.
+- **BLOCKER:** OpenAI SDK integration remains unresolved. The current backend
+  uses direct HTTP `fetch`; no SDK dependency was added because lead approval
+  is required.
+- **PENDING:** Lint and a standalone API build could not be run because the
+  package manifests define neither command. The source-level API key scan and
+  automated UI tests do not replace manual browser review.
+
+### Day 16: sanitized provider diagnostics follow-up (24 November 2026)
+
+- Added structured OpenAI failure logs with the upstream HTTP status,
+  request ID, feature, and only the allow-listed provider `type`, `code`, and
+  bounded/sanitized `message` fields. The configured API key and bearer-like
+  values are redacted; raw response bodies, request payloads, and headers are
+  not logged.
+- Fetch and stream-reader failures log only fixed failure classifications and
+  safe correlation metadata. Failed streaming events extract the same
+  allow-listed fields; malformed/incomplete responses log status without
+  response content.
+- Threaded the API `X-Request-ID` through both AI routes, provider diagnostics,
+  and usage logs. Categorization now records unavailable usage in `finally`,
+  including provider failures, so its usage and provider-error records can be
+  correlated.
+- Client-facing provider errors remain the existing generic messages. Tests
+  use mocked fetch/stream responses; no live OpenAI request was made.
+- Verification: API typecheck passed; Jest **6 suites / 73 tests passed**.
+
+### Day 16: Gemini provider migration (24 November 2026)
+
+- Replaced the active OpenAI adapter with the official Gemini Developer API
+  REST `generateContent` and `streamGenerateContent` endpoints. The API key is
+  read only from backend `GEMINI_API_KEY` and sent in the `x-goog-api-key`
+  header; it is not placed in the URL, returned to the frontend, or logged.
+- Preserved streamed reply drafts and strict categorization: categorization
+  requests JSON output constrained by the existing JSON Schema and validates
+  the result with the existing Zod schema before returning it. No generated
+  reply is posted or saved automatically.
+- Set `GEMINI_MODEL`'s default to the stable `gemini-3.5-flash-lite` model.
+  The Gemini model page and Standard-tier pricing were checked on 24 November
+  2026: input is $0.30 and output (including thinking tokens) is $2.50 per
+  million tokens. The adapter maps reported prompt, candidate, thinking, and
+  total counts. Where Gemini omits `thoughtsTokenCount`, its value is derived
+  only from the actual total/prompt/candidate counts; cost remains null when
+  the actual counts needed for an estimate are unavailable.
+- Preserved request-ID-correlated, sanitized diagnostics for HTTP, fetch,
+  parsing, and stream errors. Logs contain only HTTP status, safe failure
+  classification, request ID, and allow-listed sanitized Gemini error fields.
+- Updated `apps/api/.env.example` with placeholders and the default model.
+  The actual `.env` was not opened or changed. Migrated adapter and route tests
+  use mocked Gemini HTTP/SSE responses only.
+- Confirmed no active OpenAI-specific configuration, adapter, or test
+  references remain in the application source. Earlier journal entries are
+  retained as historical records. The former OpenAI SDK blocker is superseded
+  by this migration; no provider SDK dependency was added.
+- Official references:
+  - [Gemini models](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite)
+  - [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing#gemini-3-5-flash-lite)
+  - [GenerateContent REST contract](https://ai.google.dev/api/generate-content/generate-content)
+  - [StreamGenerateContent REST contract](https://ai.google.dev/api/generate-content/stream-generate-content)
+  - [Gemini structured outputs](https://ai.google.dev/gemini-api/docs/structured-output)
+- Verification: API Jest **6 suites / 73 tests passed**; API TypeScript
+  typecheck passed; web Vitest **12 files / 65 tests passed**; web TypeScript
+  typecheck passed. No live Gemini calls were made. Manual Postman/browser
+  verification remains pending.

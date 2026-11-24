@@ -91,3 +91,12 @@ variables:
   - key: json_web_token_0cqv
     secret: true
     disabled: false
+  - key: json_web_token_1700
+    secret: true
+    disabled: false
+  - key: json_web_token_0ro2
+    secret: true
+    disabled: false
+  - key: json_web_token_1c38
+    secret: true
+    disabled: false

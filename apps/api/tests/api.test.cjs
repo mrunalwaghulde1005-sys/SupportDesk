@@ -27,6 +27,8 @@ const request = require("supertest");
 const jwt = require("jsonwebtoken");
 const { app } = require("../src/app.ts");
 const { HttpError } = require("../src/http/errors.ts");
+const { env } = require("../src/config/env.ts");
+const { geminiProvider, setAiProviderForTests } = require("../src/ai/gemini-client.ts");
 
 const customer = {
   id: 1,
@@ -545,5 +547,202 @@ expect(spoofed.body.error.code).toBe("VALIDATION_ERROR");
 
     mockRepository.findTicketById.mockResolvedValue({ ...workflowTicket, assigneeId: 999 });
     await withToken(request(app).get("/tickets/7/comments"), agent).expect(403);
+  });
+
+  test("requires authentication and staff authorization for AI routes", async () => {
+    const unauthenticated = await request(app).post("/tickets/7/ai/suggest-reply").expect(401);
+    expect(unauthenticated.body.error.code).toBe("UNAUTHORIZED");
+    const customerDenied = await withToken(
+      request(app).post("/tickets/7/ai/categorize"),
+      customer,
+    ).expect(403);
+    expect(customerDenied.body.error.code).toBe("FORBIDDEN");
+    expect(mockRepository.findTicketById).not.toHaveBeenCalled();
+  });
+
+  test("streams a mocked reply only for the assigned Agent and never saves it", async () => {
+    mockRepository.findTicketById.mockResolvedValue({ ...ticket, assigneeId: agent.id });
+    mockCommentRepository.findComments.mockResolvedValue([]);
+    const provider = {
+      complete: jest.fn(),
+      stream: jest.fn(async ({ onDelta }) => {
+        onDelta("A reviewed draft.");
+        return { input_tokens: 18, output_tokens: 6, total_tokens: 24 };
+      }),
+    };
+    const restoreProvider = setAiProviderForTests(provider);
+    try {
+      const response = await withToken(
+        request(app).post("/tickets/7/ai/suggest-reply").buffer(true).parse((res, callback) => {
+          let data = "";
+          res.setEncoding("utf8");
+          res.on("data", (chunk) => { data += chunk; });
+          res.on("end", () => callback(null, data));
+        }),
+        agent,
+      ).expect(200);
+
+      expect(response.headers["content-type"]).toMatch(/text\/event-stream/);
+      expect(response.body).toContain('data: {"delta":"A reviewed draft."}');
+      expect(response.body).toContain("data: [DONE]");
+      expect(provider.stream).toHaveBeenCalledTimes(1);
+      expect(mockCommentRepository.findComments).toHaveBeenCalledWith(7, "AGENT");
+      expect(mockRepository.updateTicket).not.toHaveBeenCalled();
+      expect(mockCommentRepository.createComment).not.toHaveBeenCalled();
+
+      mockRepository.findTicketById.mockResolvedValue({ ...ticket, assigneeId: 77 });
+      await withToken(request(app).post("/tickets/7/ai/suggest-reply"), agent).expect(403);
+      expect(provider.stream).toHaveBeenCalledTimes(1);
+    } finally {
+      restoreProvider();
+    }
+  });
+
+  test("rejects an empty mocked reply instead of marking it complete", async () => {
+    mockRepository.findTicketById.mockResolvedValue({ ...ticket, assigneeId: agent.id });
+    mockCommentRepository.findComments.mockResolvedValue([]);
+    const restoreProvider = setAiProviderForTests({
+      complete: jest.fn(),
+      stream: jest.fn(async () => ({ input_tokens: 10, output_tokens: 0, total_tokens: 10 })),
+    });
+    try {
+      const response = await withToken(
+        request(app).post("/tickets/7/ai/suggest-reply"),
+        agent,
+      ).expect(502);
+      expect(response.body.error.code).toBe("AI_INVALID_RESPONSE");
+      expect(mockRepository.updateTicket).not.toHaveBeenCalled();
+      expect(mockCommentRepository.createComment).not.toHaveBeenCalled();
+    } finally {
+      restoreProvider();
+    }
+  });
+
+  test("validates mocked categorization strictly and returns suggestions without persisting", async () => {
+    mockRepository.findTicketById.mockResolvedValue(ticket);
+    mockCommentRepository.findComments.mockResolvedValue([]);
+    const provider = {
+      stream: jest.fn(),
+      complete: jest.fn()
+        .mockResolvedValueOnce({
+          text: JSON.stringify({ category: "Billing", priority: "P1" }),
+          usage: { input_tokens: 12, output_tokens: 4, total_tokens: 16 },
+        })
+        .mockResolvedValueOnce({
+          text: JSON.stringify({ category: "Billing", priority: "P1", applied: true }),
+          usage: { input_tokens: 12, output_tokens: 4, total_tokens: 16 },
+        }),
+    };
+    const restoreProvider = setAiProviderForTests(provider);
+    try {
+      const valid = await withToken(
+        request(app).post("/tickets/7/ai/categorize").send({}),
+        admin,
+      ).expect(200);
+      expectEnvelope(valid);
+      expect(valid.body.data).toEqual({ category: "Billing", priority: "P1" });
+      expect(mockRepository.updateTicket).not.toHaveBeenCalled();
+
+      const invalid = await withToken(
+        request(app).post("/tickets/7/ai/categorize").send({}),
+        admin,
+      ).expect(502);
+      expect(invalid.body.error.code).toBe("AI_INVALID_RESPONSE");
+      expect(mockRepository.updateTicket).not.toHaveBeenCalled();
+    } finally {
+      restoreProvider();
+    }
+  });
+
+  test("sends a sanitized streaming error after the response has started", async () => {
+    mockRepository.findTicketById.mockResolvedValue({ ...ticket, assigneeId: agent.id });
+    mockCommentRepository.findComments.mockResolvedValue([]);
+    const restoreProvider = setAiProviderForTests({
+      complete: jest.fn(),
+      stream: jest.fn(async ({ onDelta }) => {
+        onDelta("Partial draft");
+        throw new HttpError(502, "AI_PROVIDER_ERROR", "Provider detail must not be sent to clients.");
+      }),
+    });
+    try {
+      const response = await withToken(
+        request(app).post("/tickets/7/ai/suggest-reply").buffer(true).parse((res, callback) => {
+          let data = "";
+          res.setEncoding("utf8");
+          res.on("data", (chunk) => { data += chunk; });
+          res.on("end", () => callback(null, data));
+        }),
+        agent,
+      ).expect(200);
+      expect(response.body).toContain("event: error");
+      expect(response.body).toContain("AI generation failed. Please try again.");
+      expect(response.body).not.toContain("Provider detail");
+    } finally {
+      restoreProvider();
+    }
+  });
+
+  test("correlates provider diagnostics and unavailable usage logs with each AI request", async () => {
+    const originalKey = env.GEMINI_API_KEY;
+    const originalFetch = global.fetch;
+    const testKey = "test-gemini-key-for-correlation";
+    env.GEMINI_API_KEY = testKey;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      json: jest.fn().mockResolvedValue({
+        error: {
+          type: "rate_limit_error",
+          code: "rate_limit_exceeded",
+          message: "Request rate limit exceeded.",
+        },
+      }),
+    });
+    const restoreProvider = setAiProviderForTests(geminiProvider);
+    mockRepository.findTicketById.mockResolvedValue({ ...ticket, assigneeId: agent.id });
+    mockCommentRepository.findComments.mockResolvedValue([]);
+
+    try {
+      const reply = await withToken(
+        request(app).post("/tickets/7/ai/suggest-reply"),
+        agent,
+      ).expect(502);
+      const category = await withToken(
+        request(app).post("/tickets/7/ai/categorize").send({}),
+        admin,
+      ).expect(502);
+      const requestIds = [
+        reply.headers["x-request-id"],
+        category.headers["x-request-id"],
+      ];
+      const diagnostics = console.error.mock.calls
+        .map(([line]) => JSON.parse(line))
+        .filter((entry) => entry.event === "gemini_provider_error");
+      const usageLogs = console.info.mock.calls
+        .map(([line]) => JSON.parse(line))
+        .filter((entry) => entry.event === "ai_usage");
+
+      expect(reply.body.error).toMatchObject({
+        code: "AI_PROVIDER_ERROR",
+        message: "AI generation failed. Please try again.",
+      });
+      expect(category.body.error).toMatchObject({
+        code: "AI_PROVIDER_ERROR",
+        message: "AI generation failed. Please try again.",
+      });
+      for (const requestId of requestIds) {
+        expect(diagnostics).toEqual(expect.arrayContaining([
+          expect.objectContaining({ requestId, upstreamStatus: 429, errorCode: "rate_limit_exceeded" }),
+        ]));
+        expect(usageLogs).toEqual(expect.arrayContaining([
+          expect.objectContaining({ requestId, usageAvailable: false }),
+        ]));
+      }
+      expect(JSON.stringify([...diagnostics, ...usageLogs])).not.toContain(testKey);
+    } finally {
+      restoreProvider();
+      env.GEMINI_API_KEY = originalKey;
+      global.fetch = originalFetch;
+    }
   });
 });

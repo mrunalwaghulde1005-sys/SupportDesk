@@ -5,11 +5,11 @@ body:
   type: json
   content: "{\r
 
-    \  \"name\": \"Test Customer 2\",\r
+    \  \"name\": \"mrunal\",\r
 
-    \  \"email\": \"customer.test2@example.com\",\r
+    \  \"email\": \"mrunal@gmail.com\",\r
 
-    \  \"password\": \"Test@123456\"\r
+    \  \"password\": \"mrunal@12345678\"\r
 
     }"
 order: 2837

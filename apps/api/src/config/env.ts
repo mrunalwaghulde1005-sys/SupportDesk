@@ -23,6 +23,8 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
+  GEMINI_API_KEY: z.string().trim().min(1).optional(),
+  GEMINI_MODEL: z.string().trim().min(1).default("gemini-3.5-flash-lite"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

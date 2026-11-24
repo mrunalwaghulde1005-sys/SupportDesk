@@ -9,6 +9,7 @@ import { ticketRoutes } from "./routes/ticket.routes.ts";
 import { authRoutes } from "./routes/auth.routes.ts";
 import { adminRoutes } from "./routes/admin.routes.ts";
 import { commentRoutes } from "./routes/comment.routes.ts";
+import { aiRoutes } from "./routes/ai.routes.ts";
 
 export const app = express();
 const frontendDistPath = path.resolve(__dirname, "../../web/dist");
@@ -34,6 +35,7 @@ app.get("/health", (_req, res) => {
 app.use("/auth", authRoutes);
 app.use("/tickets", requireAuth, ticketRoutes);
 app.use("/tickets/:id/comments", requireAuth, commentRoutes);
+app.use("/tickets/:id/ai", requireAuth, aiRoutes);
 app.use("/api/admin", requireAuth, adminRoutes);
 
 // Keep unknown API paths in the JSON API error format, even when a frontend
