@@ -180,6 +180,55 @@ No environment values, credentials, or real API keys are recorded here.
 
 No passwords, JWTs, API keys, or environment values were recorded.
 
+## Day 17: AI guardrails
+
+### Objective
+
+Harden the existing Day 16 Gemini categorisation and reply-draft features against
+prompt injection, PII disclosure, invalid provider output, unsafe content,
+provider failures, and per-user abuse.
+
+### Implementation decisions
+
+- Ticket title, description and comment limits are enforced in backend Zod
+  schemas. AI context is also limited and explicitly delimited.
+- A reusable PII masker replaces emails, phone-like values, SSNs, card-like
+  identifiers and obvious API-key formats before provider use.
+- Categorisation and reply prompts keep trusted instructions separate and state
+  that ticket/comment content is untrusted and cannot change the task or
+  authorize actions.
+- Categorisation output uses strict Zod parsing and rejects malformed JSON,
+  missing fields, unsupported categories, priorities outside P1-P4 and extra
+  fields.
+- Reply drafts are buffered, moderated and only then emitted by the SSE
+  endpoint. They are never sent or persisted automatically.
+- Gemini safety settings add provider-side safety categories; a local moderation
+  check provides a fail-safe. Provider safety features are limitations and do
+  not replace application business rules.
+- Express rate limiting is scoped to authenticated AI routes and keyed by
+  `req.user.id`, not IP.
+- AI requests use a 15-second controller timeout. Provider, validation,
+  moderation, stream and timeout failures return the safe manual fallback
+  `AI unavailable — reply manually.` Partial replies are not persisted or
+  emitted after interruption.
+
+### Tests and reports
+
+- Added guardrail tests for limits, PII, prompt-injection delimiting,
+  moderation, strict Zod output and malformed provider JSON.
+- Existing Gemini adapter tests cover provider failures, empty and malformed
+  responses, streaming failures and secret-safe logging.
+- The lead 10-sample injection dataset and 20-labelled evaluation dataset were
+  not found. Reports document this explicitly and do not fabricate results.
+- Manual verification remains pending against an authenticated running API.
+
+### Lessons learned
+
+Treat provider output as untrusted data, validate before use, and keep AI
+drafts separate from normal ticket mutations. Unit tests must avoid real API
+keys and provider credits, while manual evidence must use fake or approved
+test credentials.
+
 ### Day 13: current verification and review (18 November 2026)
 
 #### Task objective and prompts

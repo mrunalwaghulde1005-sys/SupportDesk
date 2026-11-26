@@ -610,7 +610,10 @@ expect(spoofed.body.error.code).toBe("VALIDATION_ERROR");
         request(app).post("/tickets/7/ai/suggest-reply"),
         agent,
       ).expect(502);
-      expect(response.body.error.code).toBe("AI_INVALID_RESPONSE");
+      expect(response.body.error).toMatchObject({
+        code: "AI_FALLBACK",
+        message: "AI unavailable — reply manually.",
+      });
       expect(mockRepository.updateTicket).not.toHaveBeenCalled();
       expect(mockCommentRepository.createComment).not.toHaveBeenCalled();
     } finally {
@@ -647,14 +650,17 @@ expect(spoofed.body.error.code).toBe("VALIDATION_ERROR");
         request(app).post("/tickets/7/ai/categorize").send({}),
         admin,
       ).expect(502);
-      expect(invalid.body.error.code).toBe("AI_INVALID_RESPONSE");
+      expect(invalid.body.error).toMatchObject({
+        code: "AI_FALLBACK",
+        message: "AI unavailable — reply manually.",
+      });
       expect(mockRepository.updateTicket).not.toHaveBeenCalled();
     } finally {
       restoreProvider();
     }
   });
 
-  test("sends a sanitized streaming error after the response has started", async () => {
+  test("never exposes or emits a partial reply after streaming failure", async () => {
     mockRepository.findTicketById.mockResolvedValue({ ...ticket, assigneeId: agent.id });
     mockCommentRepository.findComments.mockResolvedValue([]);
     const restoreProvider = setAiProviderForTests({
@@ -673,10 +679,10 @@ expect(spoofed.body.error.code).toBe("VALIDATION_ERROR");
           res.on("end", () => callback(null, data));
         }),
         agent,
-      ).expect(200);
-      expect(response.body).toContain("event: error");
-      expect(response.body).toContain("AI generation failed. Please try again.");
-      expect(response.body).not.toContain("Provider detail");
+      ).expect(502);
+      const responseText = JSON.stringify(response.body);
+      expect(responseText).not.toContain("Provider detail");
+      expect(responseText).not.toContain("Partial draft");
     } finally {
       restoreProvider();
     }
@@ -723,12 +729,12 @@ expect(spoofed.body.error.code).toBe("VALIDATION_ERROR");
         .filter((entry) => entry.event === "ai_usage");
 
       expect(reply.body.error).toMatchObject({
-        code: "AI_PROVIDER_ERROR",
-        message: "AI generation failed. Please try again.",
+        code: "AI_FALLBACK",
+        message: "AI unavailable — reply manually.",
       });
       expect(category.body.error).toMatchObject({
-        code: "AI_PROVIDER_ERROR",
-        message: "AI generation failed. Please try again.",
+        code: "AI_FALLBACK",
+        message: "AI unavailable — reply manually.",
       });
       for (const requestId of requestIds) {
         expect(diagnostics).toEqual(expect.arrayContaining([

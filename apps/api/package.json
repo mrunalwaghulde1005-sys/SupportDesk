@@ -9,6 +9,7 @@
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "seed": "tsx prisma/seed.ts",
+    "evaluate:categorization": "tsx scripts/evaluate-categorization.ts",
     "admin:provision": "tsx prisma/provision-admin.ts"
   },
   "keywords": [],

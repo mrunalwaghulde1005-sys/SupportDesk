@@ -25,6 +25,8 @@ export const envSchema = z.object({
     .default("development"),
   GEMINI_API_KEY: z.string().trim().min(1).optional(),
   GEMINI_MODEL: z.string().trim().min(1).default("gemini-3.5-flash-lite"),
+  AI_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
+  AI_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

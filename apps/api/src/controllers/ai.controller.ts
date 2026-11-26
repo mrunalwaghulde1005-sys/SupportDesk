@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { sendSuccess } from "../http/response.ts";
+import { sendError, sendSuccess } from "../http/response.ts";
 import { ticketIdSchema } from "../validation/ticket.schemas.ts";
 import * as aiService from "../ai/ai.service.ts";
 
@@ -18,6 +18,7 @@ function getRequestId(res: Response): string | undefined {
 
 export async function suggestReply(req: Request, res: Response): Promise<void> {
   const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
   let streamStarted = false;
   const requestId = getRequestId(res);
   res.on("close", () => {
@@ -38,12 +39,20 @@ export async function suggestReply(req: Request, res: Response): Promise<void> {
       }
       res.write(`data: ${JSON.stringify({ delta })}\n\n`);
     }, requestId);
-    if (!controller.signal.aborted) res.end("data: [DONE]\n\n");
+    if (!controller.signal.aborted) {
+      clearTimeout(timeout);
+      res.end("data: [DONE]\n\n");
+    }
   } catch (error) {
-    if (controller.signal.aborted) return;
+    clearTimeout(timeout);
+    if (res.destroyed) return;
     if (res.headersSent) {
-      res.write(`event: error\ndata: ${JSON.stringify({ message: "AI generation failed. Please try again." })}\n\n`);
+      res.write(`event: error\ndata: ${JSON.stringify({ message: "AI unavailable — reply manually." })}\n\n`);
       res.end();
+      return;
+    }
+    if (controller.signal.aborted) {
+      sendError(res, 502, "AI_FALLBACK", "AI unavailable — reply manually.");
       return;
     }
     throw error;
@@ -51,6 +60,19 @@ export async function suggestReply(req: Request, res: Response): Promise<void> {
 }
 
 export async function categorizeTicket(req: Request, res: Response): Promise<void> {
-  const result = await aiService.categorizeTicket(parseTicketId(req), getUser(req), getRequestId(res));
-  sendSuccess(res, result);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const result = await aiService.categorizeTicket(
+      parseTicketId(req),
+      getUser(req),
+      getRequestId(res),
+      controller.signal,
+    );
+    clearTimeout(timeout);
+    sendSuccess(res, result);
+  } catch (error) {
+    clearTimeout(timeout);
+    throw error;
+  }
 }

@@ -2,8 +2,8 @@ import { TicketPriority, TicketStatus } from "../domain/ticket.ts";
 import { z } from "zod";
 
 const ticketFields = {
-  title: z.string().trim().min(1),
-  description: z.string().trim().min(1),
+  title: z.string().trim().min(1).max(120),
+  description: z.string().trim().min(1).max(5000),
   status: z.enum(TicketStatus),
   priority: z.enum(TicketPriority),
   category: z.string().trim().min(1),

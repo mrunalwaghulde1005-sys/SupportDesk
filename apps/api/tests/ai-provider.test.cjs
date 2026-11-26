@@ -76,11 +76,13 @@ describe("Gemini GenerateContent HTTP adapter", () => {
       "Content-Type": "application/json",
       Accept: "application/json",
     });
-    expect(JSON.parse(options.body)).toEqual({
+    const requestBody = JSON.parse(options.body);
+    expect(requestBody).toMatchObject({
       systemInstruction: { parts: [{ text: "Classify the ticket." }] },
       contents: [{ role: "user", parts: [{ text: "{\"title\":\"Invoice\"}" }] }],
       generationConfig: { responseMimeType: "application/json", responseJsonSchema: schema },
     });
+    expect(requestBody.safetySettings).toHaveLength(4);
   });
 
   test("does not fabricate token usage or cost when the provider omits usage", async () => {
@@ -277,10 +279,12 @@ describe("Gemini GenerateContent HTTP adapter", () => {
     expect(url).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:streamGenerateContent?alt=sse");
     expect(options.headers.Accept).toBe("text/event-stream");
     expect(options.headers["x-goog-api-key"]).toBe("test-gemini-key");
-    expect(JSON.parse(options.body)).toEqual({
+    const streamBody = JSON.parse(options.body);
+    expect(streamBody).toMatchObject({
       systemInstruction: { parts: [{ text: "Draft." }] },
       contents: [{ role: "user", parts: [{ text: "Ticket." }] }],
     });
+    expect(streamBody.safetySettings).toHaveLength(4);
   });
 
   test("rejects malformed, failed, and prematurely ended streams", async () => {

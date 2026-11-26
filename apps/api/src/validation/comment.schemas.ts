@@ -6,7 +6,7 @@ export const commentTicketIdSchema = z.object({
 });
 
 export const createCommentSchema = z.object({
-  body: z.string().trim().min(1),
+  body: z.string().trim().min(1).max(4000),
   visibility: z.enum(CommentVisibility).default(CommentVisibility.PUBLIC),
 }).strict();
 
