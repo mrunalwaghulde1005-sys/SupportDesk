@@ -13,6 +13,36 @@ interface ProviderErrorDetails {
 const emptyProviderError: ProviderErrorDetails = { type: null, code: null, message: null };
 const providerFieldLength = 400;
 const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models";
+const maxHttpRetries = 3;
+const initialRetryDelayMs = 250;
+const maxRetryDelayMs = 10000;
+const safeFetchErrorNames = new Set([
+  "Error",
+  "TypeError",
+  "AbortError",
+  "FetchError",
+  "ConnectTimeoutError",
+  "HeadersTimeoutError",
+  "SocketError",
+  "RequestAbortedError",
+]);
+const safeFetchCauseCodes = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "EPIPE",
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_HEADERS_TIMEOUT",
+  "UND_ERR_BODY_TIMEOUT",
+  "UND_ERR_SOCKET",
+  "ERR_TLS_CERT_ALTNAME_INVALID",
+  "CERT_HAS_EXPIRED",
+  "DEPTH_ZERO_SELF_SIGNED_CERT",
+]);
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -61,6 +91,24 @@ function logProviderError(input: {
     errorCode: input.details?.code ?? null,
     errorMessage: input.details?.message ?? null,
   }));
+}
+
+function fetchErrorDetails(error: unknown): ProviderErrorDetails {
+  const errorType = error instanceof Error && safeFetchErrorNames.has(error.name)
+    ? error.name
+    : "UnknownError";
+  let causeCode: string | null = null;
+  let current: unknown = error;
+
+  for (let depth = 0; depth < 3 && isRecord(current); depth += 1) {
+    if (typeof current.code === "string" && safeFetchCauseCodes.has(current.code)) {
+      causeCode = current.code;
+      break;
+    }
+    current = current.cause;
+  }
+
+  return { type: errorType, code: causeCode, message: null };
 }
 
 export interface TextGenerationResult {
@@ -124,6 +172,62 @@ function configError(): HttpError {
   return new HttpError(503, "AI_UNAVAILABLE", "AI features are not configured.");
 }
 
+function retryDelayFromBody(value: unknown): number | undefined {
+  if (!isRecord(value)) return undefined;
+  const providerError = isRecord(value.error) ? value.error : value;
+  if (typeof providerError.retryDelay === "string") {
+    const match = providerError.retryDelay.match(/^(\d+(?:\.\d+)?)s$/);
+    if (match) return Number(match[1]) * 1000;
+  }
+  if (Array.isArray(providerError.details)) {
+    for (const detail of providerError.details) {
+      if (!isRecord(detail)) continue;
+      const delay = detail.retryDelay;
+      if (typeof delay === "string") {
+        const match = delay.match(/^(\d+(?:\.\d+)?)s$/);
+        if (match) return Number(match[1]) * 1000;
+        continue;
+      }
+      if (!isRecord(delay)) continue;
+      if (typeof delay.seconds === "string" || typeof delay.seconds === "number") {
+        const seconds = Number(delay.seconds);
+        const nanos = typeof delay.nanos === "number" && Number.isFinite(delay.nanos) ? delay.nanos : 0;
+        if (Number.isFinite(seconds) && seconds >= 0 && nanos >= 0) {
+          return seconds * 1000 + nanos / 1_000_000;
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+function retryDelayFromHeader(response: Response): number | undefined {
+  const value = response.headers?.get("retry-after");
+  if (!value) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? undefined : Math.max(0, timestamp - Date.now());
+}
+
+function waitForRetry(delayMs: number, signal?: AbortSignal): Promise<void> {
+  if (signal?.aborted) {
+    return Promise.reject(new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again."));
+  }
+  return new Promise((resolve, reject) => {
+    const onAbort = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+      reject(new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again."));
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, delayMs);
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
 function requestBody(instructions: string, content: string, jsonSchema?: Record<string, unknown>): JsonRecord {
   return {
     systemInstruction: { parts: [{ text: instructions }] },
@@ -153,46 +257,66 @@ async function post(
   if (!env.GEMINI_API_KEY) throw configError();
   const streamQuery = streaming ? "?alt=sse" : "";
   const url = `${apiUrl}/${encodeURIComponent(env.GEMINI_MODEL)}:${streaming ? "streamGenerateContent" : "generateContent"}${streamQuery}`;
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": env.GEMINI_API_KEY,
-        "Content-Type": "application/json",
-        Accept: streaming ? "text/event-stream" : "application/json",
-      },
-      body: JSON.stringify(body),
-      signal,
-    });
-    if (!response.ok) {
-      let details = emptyProviderError;
-      try {
-        details = readProviderError(await response.json());
-      } catch {
-        // Provider response bodies are never logged unless allow-listed fields parse successfully.
-      }
-      logProviderError({
-        feature,
-        requestId,
-        upstreamStatus: response.status,
-        failureKind: "http",
-        details,
-      });
+  for (let retry = 0; retry <= maxHttpRetries; retry += 1) {
+    if (signal?.aborted) {
       throw new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again.");
     }
-    return response;
-  } catch (error) {
-    if (error instanceof HttpError) throw error;
-    if (!signal?.aborted) {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": env.GEMINI_API_KEY,
+          "Content-Type": "application/json",
+          Accept: streaming ? "text/event-stream" : "application/json",
+        },
+        body: JSON.stringify(body),
+        signal,
+      });
+    } catch (error) {
+      if (signal?.aborted) {
+        throw new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again.");
+      }
       logProviderError({
         feature,
         requestId,
         upstreamStatus: null,
         failureKind: "fetch",
+        details: fetchErrorDetails(error),
       });
+      throw new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again.");
     }
-    throw new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again.");
+
+    if (!response.ok) {
+      let details = emptyProviderError;
+      let errorBody: unknown;
+      try {
+        errorBody = await response.json();
+        details = readProviderError(errorBody);
+      } catch {
+        // Provider response bodies are never logged unless allow-listed fields parse successfully.
+      }
+
+      const retryable = response.status === 429 || response.status === 503;
+      if (retryable && retry < maxHttpRetries && !signal?.aborted) {
+        const providerDelay = retryDelayFromHeader(response) ?? retryDelayFromBody(errorBody);
+        const backoffDelay = initialRetryDelayMs * (2 ** retry);
+        await waitForRetry(Math.min(providerDelay ?? backoffDelay, maxRetryDelayMs), signal);
+        continue;
+      }
+
+      logProviderError({
+        feature,
+        requestId,
+        upstreamStatus: response.status,
+        failureKind: "http",
+        details: retryable ? { ...details, message: null } : details,
+      });
+      throw new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again.");
+    }
+    return response;
   }
+  throw new HttpError(502, "AI_PROVIDER_ERROR", "AI generation failed. Please try again.");
 }
 
 export const geminiProvider: AiProvider = {

@@ -3,12 +3,15 @@ const { geminiProvider } = require("../src/ai/gemini-client.ts");
 const { estimateCostUsd } = require("../src/ai/pricing.ts");
 const { logUsage } = require("../src/ai/usage.ts");
 
-function providerResponse({ status = 200, json = {}, body = null } = {}) {
+function providerResponse({ status = 200, json = {}, body = null, headers = {} } = {}) {
   return {
     ok: status >= 200 && status < 300,
     status,
     json: jest.fn().mockResolvedValue(json),
     body,
+    headers: {
+      get: jest.fn((name) => headers[name.toLowerCase()] ?? null),
+    },
   };
 }
 
@@ -98,10 +101,71 @@ describe("Gemini GenerateContent HTTP adapter", () => {
     expect(estimateCostUsd("unknown-model", 31, 12, 0)).toBeNull();
   });
 
-  test("maps provider and malformed JSON responses to sanitized errors", async () => {
-    global.fetch.mockResolvedValue(providerResponse({ status: 429 }));
+  test("retries 429 and succeeds, respecting Gemini retry delay", async () => {
+    global.fetch
+      .mockResolvedValueOnce(providerResponse({
+        status: 429,
+        json: { error: { details: [{ "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "0s" }] } },
+      }))
+      .mockResolvedValueOnce(providerResponse({
+        json: { candidates: [{ content: { parts: [{ text: "Draft" }] }, finishReason: "STOP" }] },
+      }));
+
+    await expect(geminiProvider.complete({ instructions: "Draft.", content: "Ticket." }))
+      .resolves.toMatchObject({ text: "Draft" });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  test("retries 503 and succeeds, respecting Retry-After", async () => {
+    global.fetch
+      .mockResolvedValueOnce(providerResponse({ status: 503, headers: { "retry-after": "0" } }))
+      .mockResolvedValueOnce(providerResponse({
+        json: { candidates: [{ content: { parts: [{ text: "Draft" }] }, finishReason: "STOP" }] },
+      }));
+
+    await expect(geminiProvider.complete({ instructions: "Draft.", content: "Ticket." }))
+      .resolves.toMatchObject({ text: "Draft" });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  test("stops after the configured bounded retry count", async () => {
+    global.fetch.mockResolvedValue(providerResponse({
+      status: 429,
+      headers: { "retry-after": "0" },
+    }));
+
     await expect(geminiProvider.complete({ instructions: "Draft.", content: "Ticket." }))
       .rejects.toMatchObject({ status: 502, code: "AI_PROVIDER_ERROR" });
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+  });
+
+  test("does not retry non-retryable HTTP errors", async () => {
+    global.fetch.mockResolvedValue(providerResponse({ status: 401 }));
+
+    await expect(geminiProvider.complete({ instructions: "Draft.", content: "Ticket." }))
+      .rejects.toMatchObject({ status: 502, code: "AI_PROVIDER_ERROR" });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  test("aborts during retry delay without issuing another request", async () => {
+    global.fetch.mockResolvedValue(providerResponse({
+      status: 503,
+      headers: { "retry-after": "10" },
+    }));
+    const controller = new AbortController();
+    const pending = geminiProvider.complete({
+      instructions: "Draft.",
+      content: "Ticket.",
+      signal: controller.signal,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    controller.abort();
+
+    await expect(pending).rejects.toMatchObject({ status: 502, code: "AI_PROVIDER_ERROR" });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  test("maps malformed success JSON to a sanitized error without retrying", async () => {
 
     global.fetch.mockResolvedValue({
       ...providerResponse(),
@@ -109,6 +173,7 @@ describe("Gemini GenerateContent HTTP adapter", () => {
     });
     await expect(geminiProvider.complete({ instructions: "Draft.", content: "Ticket." }))
       .rejects.toMatchObject({ status: 502, code: "AI_INVALID_RESPONSE" });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
   test("logs only bounded, sanitized upstream error fields and preserves the generic API error", async () => {
@@ -159,7 +224,9 @@ describe("Gemini GenerateContent HTTP adapter", () => {
 
   test("logs fetch failures by safe error name without exception messages", async () => {
     const secret = env.GEMINI_API_KEY;
-    const failure = new Error(`Request failed with Bearer ${secret}`);
+    const failure = new TypeError(`Request failed with Bearer ${secret} and customer@example.com`, {
+      cause: Object.assign(new Error(`Sensitive fetch detail ${secret}`), { code: "ECONNRESET" }),
+    });
     failure.name = "FetchError";
     global.fetch.mockRejectedValue(failure);
     const log = jest.spyOn(console, "error").mockImplementation(() => {});
@@ -180,13 +247,36 @@ describe("Gemini GenerateContent HTTP adapter", () => {
       requestId: "request-fetch",
       upstreamStatus: null,
       failureKind: "fetch",
-      errorType: null,
-      errorCode: null,
+      errorType: "FetchError",
+      errorCode: "ECONNRESET",
       errorMessage: null,
     });
     expect(JSON.stringify(diagnostic)).not.toContain(secret);
     expect(JSON.stringify(diagnostic)).not.toContain("Request failed");
+    expect(JSON.stringify(diagnostic)).not.toContain("customer@example.com");
+    expect(JSON.stringify(diagnostic)).not.toContain("Sensitive fetch detail");
     expect(diagnostic.fetchErrorType).toBeUndefined();
+  });
+
+  test("does not log unrecognized fetch error names or cause codes", async () => {
+    const failure = new Error("Do not log this message");
+    failure.name = "Bearer secret-name";
+    failure.code = "PRIVATE_CONTENT";
+    global.fetch.mockRejectedValue(failure);
+    const log = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(geminiProvider.complete({
+      instructions: "Draft.",
+      content: "PII: customer@example.com",
+    })).rejects.toMatchObject({ status: 502, code: "AI_PROVIDER_ERROR" });
+
+    const diagnostic = JSON.parse(log.mock.calls[0][0]);
+    expect(diagnostic.errorType).toBe("UnknownError");
+    expect(diagnostic.errorCode).toBeNull();
+    expect(JSON.stringify(diagnostic)).not.toContain("Do not log");
+    expect(JSON.stringify(diagnostic)).not.toContain("customer@example.com");
+    expect(JSON.stringify(diagnostic)).not.toContain("PRIVATE_CONTENT");
+    expect(JSON.stringify(diagnostic)).not.toContain("Bearer secret-name");
   });
 
   test("logs allow-listed fields from failed streaming events and safely handles stream-read errors", async () => {

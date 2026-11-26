@@ -11,7 +11,7 @@ type LabelledTicket = {
   expectedCategory: "Technical" | "Account" | "Billing";
 };
 
-const datasetArg = process.argv[2] ?? "eval/day-17-labelled-tickets.json";
+const datasetArg = process.argv[2] ?? "tests-data/labelled-evaluation-tickets.json";
 const datasetPath = path.resolve(process.cwd(), datasetArg);
 
 if (!fs.existsSync(datasetPath)) {

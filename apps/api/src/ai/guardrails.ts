@@ -19,9 +19,10 @@ export function limitText(value: string, maxLength: number): string {
 export function maskPii(value: string): string {
   return value
     .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[EMAIL_REDACTED]")
-    .replace(/(?<!\d)(?:\+?\d[\d ().-]{7,}\d)(?!\d)/g, "[PHONE_REDACTED]")
+    .replace(/\b(?:4\d{3}|5[1-5]\d{2}|3[47]\d{2}|6(?:011|5\d{2}))[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, "[CARD_REDACTED]")
     .replace(/\b\d{3}[- ]?\d{2}[- ]?\d{4}\b/g, "[SSN_REDACTED]")
-    .replace(/\b(?:\d[ -]?){13,19}\b/g, "[CARD_REDACTED]")
+    .replace(/(?<!\d)(?:\+?\d[\d ().-]{7,}\d)(?!\d)/g, "[PHONE_REDACTED]")
+    .replace(/\b(password|passcode|passphrase)\s*(?:is|=|:)\s*[^,\s.;]+/gi, "$1 [PASSWORD_REDACTED]")
     .replace(/\b(?:AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9_-]{8,})\b/g, "[SECRET_REDACTED]");
 }
 

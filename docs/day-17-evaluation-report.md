@@ -1,34 +1,48 @@
 # Day 17 Categorisation Evaluation Report
 
-The lead-provided 20-ticket labelled evaluation dataset was not present in the
-repository. The existing `cli/sample-tickets.csv` and JSON files are seed data,
-not a verified lead-labelled evaluation set, and were not used to claim
-accuracy.
+## Dataset
+
+`apps/api/tests-data/labelled-evaluation-tickets.json` contains 20 synthetic
+evaluation records. These labels are not confirmed as lead-provided labels and
+are not production customer data.
+
+Each record provides `title`, `description`, and `expectedCategory`, matching
+the evaluation script's input format.
 
 ## Repeatable script
 
 Run from `apps/api`:
 
 ```powershell
-npm.cmd run evaluate:categorization -- eval/day-17-labelled-tickets.json
+npm.cmd run evaluate:categorization -- tests-data/labelled-evaluation-tickets.json
 ```
 
-The script:
+The script processes the records sequentially, applies the existing PII
+masking and guarded context construction, calls the Gemini categorisation
+provider, validates output with the strict Zod schema, calculates accuracy,
+and lists incorrect predictions.
 
-- reads exactly 20 labelled records;
-- uses PII masking and guarded prompt context;
-- calls the existing Gemini categorisation provider;
-- validates provider output with the strict Zod schema;
-- computes `Correct / Total * 100`;
-- lists incorrect or invalid predictions.
+## Latest verified results
 
-No credentials or real customer data are required in source fixtures.
+- Total predictions: 20
+- Correct predictions: 17
+- Incorrect predictions: 3
+- Accuracy: **85.00%** (`17 / 20 * 100`)
+- Acceptance target: 80% (at least 16 of 20)
+- Acceptance result: **Met**
 
-## Actual results
+Incorrect predictions:
 
-- Total predictions: 0 measured / 20 pending
-- Correct predictions: 0 measured
-- Incorrect predictions: pending
-- Accuracy: pending
-- Acceptance target: at least 16/20 (80%)
-- Blocker: lead-labelled dataset unavailable
+| Ticket | Expected | Predicted |
+|---|---|---|
+| Cannot sign in after password reset | Account | Technical |
+| Profile details not saving | Account | Technical |
+| Session expires immediately | Account | Technical |
+
+## Earlier fetch failure
+
+An earlier evaluation attempt failed in `fetch()` before an upstream HTTP
+status was received. The available log did not contain a cause code, so the
+root cause of that attempt is unknown; a quota error is not confirmed. After
+safe network diagnostics were added, a live smoke test and a subsequent full
+evaluation succeeded.

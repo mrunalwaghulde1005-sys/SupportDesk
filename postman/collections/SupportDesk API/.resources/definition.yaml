@@ -100,3 +100,9 @@ variables:
   - key: json_web_token_1c38
     secret: true
     disabled: false
+  - key: json_web_token_0nmz
+    secret: true
+    disabled: false
+  - key: json_web_token_08f6
+    secret: true
+    disabled: false

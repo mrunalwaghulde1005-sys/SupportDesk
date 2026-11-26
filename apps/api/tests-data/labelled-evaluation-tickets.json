@@ -1,0 +1,122 @@
+[
+  {
+    "id": "EVAL-001",
+    "title": "Cannot sign in after password reset",
+    "description": "After resetting my password, the login page says my credentials are invalid.",
+    "expectedCategory": "Account"
+  },
+  {
+    "id": "EVAL-002",
+    "title": "Two-factor code not arriving",
+    "description": "I am not receiving the verification code on my registered phone.",
+    "expectedCategory": "Account"
+  },
+  {
+    "id": "EVAL-003",
+    "title": "Update email address",
+    "description": "Please help me change the email address linked to my profile.",
+    "expectedCategory": "Account"
+  },
+  {
+    "id": "EVAL-004",
+    "title": "Account locked",
+    "description": "My account was locked after several failed login attempts.",
+    "expectedCategory": "Account"
+  },
+  {
+    "id": "EVAL-005",
+    "title": "Profile details not saving",
+    "description": "Changes to my name and phone number disappear after I click Save.",
+    "expectedCategory": "Account"
+  },
+  {
+    "id": "EVAL-006",
+    "title": "Unable to deactivate account",
+    "description": "I cannot find the option to close my account permanently.",
+    "expectedCategory": "Account"
+  },
+  {
+    "id": "EVAL-007",
+    "title": "Session expires immediately",
+    "description": "The app signs me out every time I open a new page.",
+    "expectedCategory": "Account"
+  },
+  {
+    "id": "EVAL-008",
+    "title": "Checkout page keeps loading",
+    "description": "The checkout page spins forever and never opens the payment form.",
+    "expectedCategory": "Technical"
+  },
+  {
+    "id": "EVAL-009",
+    "title": "Mobile app crashes on launch",
+    "description": "The Android app closes as soon as I tap its icon.",
+    "expectedCategory": "Technical"
+  },
+  {
+    "id": "EVAL-010",
+    "title": "File upload returns error",
+    "description": "Uploading a PDF attachment fails with an unexpected server error.",
+    "expectedCategory": "Technical"
+  },
+  {
+    "id": "EVAL-011",
+    "title": "Dashboard is blank",
+    "description": "The dashboard loads but none of the charts or ticket lists appear.",
+    "expectedCategory": "Technical"
+  },
+  {
+    "id": "EVAL-012",
+    "title": "Search is not working",
+    "description": "Searching for a ticket ID returns no results even when the ticket exists.",
+    "expectedCategory": "Technical"
+  },
+  {
+    "id": "EVAL-013",
+    "title": "Notifications are delayed",
+    "description": "The application does not display notifications until I refresh the page.",
+    "expectedCategory": "Technical"
+  },
+  {
+    "id": "EVAL-014",
+    "title": "Page layout broken",
+    "description": "Buttons overlap and the navigation menu is missing in the latest browser version.",
+    "expectedCategory": "Technical"
+  },
+  {
+    "id": "EVAL-015",
+    "title": "Invoice amount is incorrect",
+    "description": "The invoice total is higher than the amount shown at checkout.",
+    "expectedCategory": "Billing"
+  },
+  {
+    "id": "EVAL-016",
+    "title": "Charged twice for one order",
+    "description": "My bank statement shows two charges for the same transaction.",
+    "expectedCategory": "Billing"
+  },
+  {
+    "id": "EVAL-017",
+    "title": "Refund not received",
+    "description": "The refund was approved last week but has not appeared in my account.",
+    "expectedCategory": "Billing"
+  },
+  {
+    "id": "EVAL-018",
+    "title": "Payment method declined",
+    "description": "My valid card is being declined when I try to pay the subscription.",
+    "expectedCategory": "Billing"
+  },
+  {
+    "id": "EVAL-019",
+    "title": "Subscription renewal amount",
+    "description": "Please explain why the renewal charge differs from last month's bill.",
+    "expectedCategory": "Billing"
+  },
+  {
+    "id": "EVAL-020",
+    "title": "Tax missing from receipt",
+    "description": "The receipt does not show the tax amount that was included in my payment.",
+    "expectedCategory": "Billing"
+  }
+]
