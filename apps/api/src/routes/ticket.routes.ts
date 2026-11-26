@@ -1,11 +1,13 @@
 import { Router } from "express";
 import * as ticketController from "../controllers/ticket.controller.ts";
 import { asyncHandler } from "../middleware/async-handler.ts";
+import { requireRole } from "../middleware/require-role.ts";
 
 export const ticketRoutes = Router();
 
+
 ticketRoutes.get("/", asyncHandler(ticketController.listTickets));
-ticketRoutes.post("/", asyncHandler(ticketController.createTicket));
+ticketRoutes.post("/", requireRole("CUSTOMER"), asyncHandler(ticketController.createTicket));
 ticketRoutes.get("/:id", asyncHandler(ticketController.getTicket));
 ticketRoutes.put("/:id", asyncHandler(ticketController.updateTicket));
 ticketRoutes.patch("/:id", asyncHandler(ticketController.updateTicket));

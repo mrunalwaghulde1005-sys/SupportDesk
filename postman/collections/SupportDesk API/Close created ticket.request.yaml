@@ -1,8 +1,0 @@
-$kind: http-request
-url: http://localhost:3000/tickets/54/close
-method: PATCH
-auth:
-  type: bearer
-  credentials:
-    token: "{{api_key}}"
-order: 6000

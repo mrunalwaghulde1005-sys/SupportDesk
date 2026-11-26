@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhost:3000/tickets/68/ai/categorize
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: "{}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0ro2}}"
+settings:
+  disabledSystemHeaders:
+    - accept
+order: 1000

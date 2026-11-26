@@ -1,0 +1,39 @@
+$kind: http-request
+url: http://localhost:3000/tickets
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0no0}}"
+body:
+  type: json
+  content: |-
+    {
+      "title": "Login Issue",
+      "description": "I am unable to login to my account.",
+      "priority": "P2",
+      "category": "Technical"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('created successfully', function () {
+        pm.expect(pm.response.code).to.be.oneOf([201, 401]);
+      });
+
+      pm.test('response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(1000); });
+
+      const body = pm.response.json();
+      pm.test('standard response envelope', function () { pm.expect(body).to.have.all.keys('data', 'error', 'meta'); });
+
+      if (pm.response.code === 201 && body.data && body.data.id) {
+        pm.collectionVariables.set('ticket_id', body.data.id);
+      }
+    language: text/javascript
+settings:
+  disabledSystemHeaders:
+    - content-type
+order: 3000

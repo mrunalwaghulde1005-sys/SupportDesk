@@ -1,0 +1,15 @@
+$kind: http-request
+url: http://localhost:3000/tickets/68
+method: PATCH
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Login Issue - PATCH Updated\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0no0}}"
+order: 7000

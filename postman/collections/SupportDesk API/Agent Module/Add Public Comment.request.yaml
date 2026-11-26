@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhost:3000/tickets/68/comments
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"body\": \"I am checking the issue and will update you shortly.\",\r
+
+    \  \"visibility\": \"PUBLIC\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0xwu}}"
+order: 7000

@@ -1,11 +1,17 @@
 $kind: collection
 description: Smoke tests and ticket CRUD for the SupportDesk TypeScript API.
 variables:
+  - key: ticket_id
+    value: ""
+    disabled: false
+  - key: json_web_token_0qi6
+    secret: true
+    disabled: false
   - key: baseUrl
-    value: http://localhost:3000
+    value: ""
     disabled: false
   - key: createdById
-    value: "1"
+    value: ""
     disabled: false
   - key: ticketId
     value: ""
@@ -20,5 +26,83 @@ variables:
     secret: true
     disabled: false
   - key: json_web_token_1cqp
+    secret: true
+    disabled: false
+  - key: json_web_token_0fzi
+    secret: true
+    disabled: false
+  - key: json_web_token_0udr
+    secret: true
+    disabled: false
+  - key: json_web_token_05gn
+    secret: true
+    disabled: false
+  - key: json_web_token_14mb
+    secret: true
+    disabled: false
+  - key: json_web_token_0zvc
+    secret: true
+    disabled: false
+  - key: json_web_token_16io
+    secret: true
+    disabled: false
+  - key: json_web_token_0xwu
+    secret: true
+    disabled: false
+  - key: json_web_token_17pq
+    secret: true
+    disabled: false
+  - key: json_web_token_0syx
+    secret: true
+    disabled: false
+  - key: json_web_token_0rml
+    secret: true
+    disabled: false
+  - key: json_web_token_0uwk
+    secret: true
+    disabled: false
+  - key: json_web_token_0gkg
+    secret: true
+    disabled: false
+  - key: json_web_token_0no0
+    secret: true
+    disabled: false
+  - key: json_web_token_1849
+    secret: true
+    disabled: false
+  - key: json_web_token_1ec0
+    secret: true
+    disabled: false
+  - key: json_web_token_1bxy
+    secret: true
+    disabled: false
+  - key: json_web_token_18zy
+    secret: true
+    disabled: false
+  - key: json_web_token_11wt
+    secret: true
+    disabled: false
+  - key: json_web_token_0mht
+    secret: true
+    disabled: false
+  - key: json_web_token_03pz
+    secret: true
+    disabled: false
+  - key: json_web_token_0cqv
+    secret: true
+    disabled: false
+  - key: json_web_token_1700
+    secret: true
+    disabled: false
+  - key: json_web_token_0ro2
+    secret: true
+    disabled: false
+  - key: json_web_token_1c38
+    secret: true
+    disabled: false
+  - key: json_web_token_0nmz
+    secret: true
+    disabled: false
+  - key: json_web_token_08f6
     secret: true
     disabled: false

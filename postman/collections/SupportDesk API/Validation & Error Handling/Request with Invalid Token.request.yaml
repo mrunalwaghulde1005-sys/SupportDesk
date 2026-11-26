@@ -1,0 +1,8 @@
+$kind: http-request
+url: "\thttp://localhost:3000/tickets"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: invalid-token-12345
+order: 4000

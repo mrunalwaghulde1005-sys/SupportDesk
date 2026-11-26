@@ -1,8 +1,0 @@
-$kind: http-request
-url: http://localhost:3000/tickets/54/reopen
-method: PATCH
-auth:
-  type: bearer
-  credentials:
-    token: "{{access_token}}"
-order: 7000

@@ -1,0 +1,27 @@
+$kind: http-request
+url: http://localhost:3000/tickets
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Manual Testing - Day 17\",\r
+
+    \  \"description\": \"Testing valid ticket creation for AI guardrails.\",\r
+
+    \  \"priority\": \"P2\",\r
+
+    \  \"category\": \"Technical\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_0nmz}}"
+settings:
+  disabledSystemHeaders:
+    - accept
+order: 1000

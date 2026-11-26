@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhost:3000/tickets/68/ai/suggest-reply
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: text/event-stream
+body:
+  type: json
+  content: "{}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_1c38}}"
+settings:
+  disabledSystemHeaders:
+    - accept
+order: 2000

@@ -42,11 +42,13 @@ function translatePrismaError(error: unknown): never {
 export async function findTickets(
   query: TicketListQuery,
   createdById?: number,
+  assigneeId?: number,
 ) {
   const where: Prisma.TicketWhereInput = {
     ...(query.status ? { status: query.status } : {}),
     ...(query.priority ? { priority: query.priority } : {}),
     ...(createdById !== undefined ? { createdById } : {}),
+    ...(assigneeId !== undefined ? { assigneeId } : {}),
   };
 
   const skip = (query.page - 1) * query.limit;

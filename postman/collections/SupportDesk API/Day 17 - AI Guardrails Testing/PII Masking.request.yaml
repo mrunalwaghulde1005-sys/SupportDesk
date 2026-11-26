@@ -1,0 +1,23 @@
+$kind: http-request
+url: http://localhost:3000/tickets/1/ai/suggest-reply
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"ticketId\": 54,\r
+
+    \  \"message\": \"My email is testuser@gmail.com and my phone number is 9876543210. Please help me with my account.\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{json_web_token_08f6}}"
+settings:
+  disabledSystemHeaders:
+    - accept
+order: 5000
