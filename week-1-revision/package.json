@@ -1,0 +1,19 @@
+{
+  "name": "week-1-task-cli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A beginner-friendly TypeScript CLI for managing tasks",
+  "scripts": {
+    "cli": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --runInBand"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.6.5",
+    "jest": "^30.5.2",
+    "ts-jest": "^29.4.15",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}
